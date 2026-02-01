@@ -1,55 +1,71 @@
+const Parser = require('rss-parser');
 const fs = require('fs');
+const parser = new Parser();
 
-function calculateScore(count, avg) {
-  const ratio = count / avg;
-  if (ratio <= 1) return 25;
-  if (ratio <= 1.5) return 50;
-  if (ratio <= 2) return 75;
-  return 100;
+const feeds = [
+  { url: 'https://www.understandingwar.org/rss.xml', source: 'ISW' },
+  { url: 'https://www.bellingcat.com/feed/', source: 'Bellingcat' },
+  { url: 'https://warontherocks.com/feed/', source: 'WarOnTheRocks' },
+  { url: 'https://www.al-monitor.com/rss', source: 'AlMonitor' },
+  { url: 'https://www.reutersagency.com/feed/?best-topics=middle-east', source: 'ReutersME' }
+];
+
+const militaryWords = ['missile','strike','attack','air defense','deployment','forces','military'];
+const rhetoricWords = ['threat','warning','retaliation','ultimatum','response'];
+const regionalWords = ['iran','israel','hezbollah','syria','gulf','lebanon'];
+
+function countMatches(text, words) {
+  text = text.toLowerCase();
+  return words.filter(w => text.includes(w)).length;
 }
 
-// 🔹 Пример входных данных (пока тест)
-const todaySignals = {
-  military: 18,
-  rhetoric: 12,
-  regional: 7,
-  osint: 30
-};
+(async () => {
+  let militaryCount = 0;
+  let rhetoricCount = 0;
+  let regionalCount = 0;
+  let totalArticles = 0;
+  let signals = [];
 
-const avgSignals = {
-  military: 10,
-  rhetoric: 8,
-  regional: 5,
-  osint: 15
-};
+  for (const feed of feeds) {
+    const data = await parser.parseURL(feed.url);
+    data.items.slice(0,5).forEach(item => {
+      const text = (item.title + ' ' + item.contentSnippet).toLowerCase();
+      militaryCount += countMatches(text, militaryWords);
+      rhetoricCount += countMatches(text, rhetoricWords);
+      regionalCount += countMatches(text, regionalWords);
+      totalArticles++;
 
-// 🔹 Расчёт блоков
-const militaryScore = calculateScore(todaySignals.military, avgSignals.military);
-const rhetoricScore = calculateScore(todaySignals.rhetoric, avgSignals.rhetoric);
-const regionalScore = calculateScore(todaySignals.regional, avgSignals.regional);
-const osintScore = calculateScore(todaySignals.osint, avgSignals.osint);
+      signals.push({
+        source: feed.source,
+        title: item.title,
+        link: item.link,
+        date: item.pubDate
+      });
+    });
+  }
 
-// 🔹 Итоговый индекс
-const index =
-  militaryScore * 0.35 +
-  rhetoricScore * 0.25 +
-  osintScore * 0.20 +
-  regionalScore * 0.20;
+  const avg = 5; // базовый фон
+  const calc = c => c <= avg ? 25 : c <= avg*1.5 ? 50 : c <= avg*2 ? 75 : 100;
 
-// 🔹 Формирование JSON
-const output = {
-  last_update: new Date().toISOString(),
-  index: Math.round(index),
-  trend: 0,
-  blocks: {
-    military: militaryScore,
-    rhetoric: rhetoricScore,
-    osint_activity: osintScore,
-    regional: regionalScore
-  },
-  signals: []
-};
+  const militaryScore = calc(militaryCount);
+  const rhetoricScore = calc(rhetoricCount);
+  const regionalScore = calc(regionalCount);
+  const osintScore = calc(totalArticles);
 
-fs.writeFileSync('./data/data.json', JSON.stringify(output, null, 2));
+  const index = militaryScore*0.35 + rhetoricScore*0.25 + osintScore*0.2 + regionalScore*0.2;
 
-console.log("Data updated");
+  const output = {
+    last_update: new Date().toISOString(),
+    index: Math.round(index),
+    trend: 0,
+    blocks: {
+      military: militaryScore,
+      rhetoric: rhetoricScore,
+      osint_activity: osintScore,
+      regional: regionalScore
+    },
+    signals: signals.slice(0,5)
+  };
+
+  fs.writeFileSync('./data/data.json', JSON.stringify(output, null, 2));
+})();
