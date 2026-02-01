@@ -1,55 +1,77 @@
 import { useEffect, useState } from "react";
-import ThreatIndex from "../components/ThreatIndex";
-import ThreatTrend from "../components/ThreatTrend";
+import ThreatIndexSimple from "../components/ThreatIndexSimple";
 
 export default function Home() {
-  const [threatData, setThreatData] = useState(null);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/data/data.json", { cache: "no-store" })
-      .then(res => res.json())
-      .then(data => setThreatData(data))
-      .catch(err => console.error("Ошибка загрузки data.json:", err));
+      .then(res => {
+        if (!res.ok) throw new Error("Не удалось загрузить data.json");
+        return res.json();
+      })
+      .then(json => setData(json))
+      .catch(err => setError(err.message));
   }, []);
 
-  if (!threatData) return <div style={{ color: "white", textAlign: "center", marginTop: "50px" }}>Загрузка данных...</div>;
+  if (error) {
+    return (
+      <div style={{ color: "white", padding: "40px", textAlign: "center" }}>
+        Ошибка: {error}
+      </div>
+    );
+  }
 
-  const dataForIndex = {
-    military: threatData.blocks.military / 20,
-    rhetoric: threatData.blocks.rhetoric / 20,
-    diplomacy: 2,
-    proxies: threatData.blocks.regional / 20,
-    cyber: 1,
-    alerts: 2,
-  };
+  if (!data) {
+    return (
+      <div style={{ color: "white", padding: "40px", textAlign: "center" }}>
+        Загрузка данных...
+      </div>
+    );
+  }
 
   return (
     <main style={{ background: "#111", minHeight: "100vh", color: "white", fontFamily: "Arial, sans-serif", padding: "20px" }}>
       <h1 style={{ textAlign: "center" }}>OSINT Security Radar — Израиль</h1>
       <p style={{ textAlign: "center", color: "#888" }}>
-        Последнее обновление: {new Date(threatData.last_update).toLocaleString()}
+        Последнее обновление: {new Date(data.last_update).toLocaleString()}
       </p>
 
-      <ThreatIndex data={dataForIndex} />
-      <ThreatTrend />
+      <ThreatIndexSimple index={data.index} />
 
-      <section style={{ maxWidth: "900px", margin: "40px auto" }}>
-        <h2 style={{ textAlign: "center" }}>Последние аналитические сигналы</h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "20px" }}>
-          {threatData.signals.map((s, i) => (
-            <a key={i} href={s.link} target="_blank" rel="noopener noreferrer"
-               style={{ background: "#1c1c1c", padding: "15px", borderRadius: "8px", color: "white", textDecoration: "none" }}>
-              <div style={{ fontWeight: "bold" }}>{s.title}</div>
-              <div style={{ fontSize: "12px", color: "#aaa" }}>
-                {s.source} | {new Date(s.date).toLocaleString()}
-              </div>
-            </a>
-          ))}
-        </div>
+      <section style={{ marginTop: "20px", textAlign: "center" }}>
+        <h2>Последние сигналы</h2>
+        {data.signals && data.signals.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+            {data.signals.map((s, i) => (
+              <a
+                key={i}
+                href={s.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: "#1c1c1c",
+                  padding: "14px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  color: "white"
+                }}
+              >
+                <div style={{ fontWeight: "bold" }}>{s.title}</div>
+                <div style={{ fontSize: "12px", color: "#aaa" }}>
+                  {s.source} | {new Date(s.date).toLocaleString()}
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div style={{ color: "#888", marginTop: "10px" }}>Нет сигналов</div>
+        )}
       </section>
 
-      <footer style={{ textAlign: "center", padding: "20px", fontSize: "14px", color: "#888" }}>
-        © 2026 OSINT Dashboard | Данные обновляются автоматически
+      <footer style={{ marginTop: "30px", fontSize: "14px", color: "#777", textAlign: "center" }}>
+        © 2026 OSINT Dashboard
       </footer>
     </main>
   );
