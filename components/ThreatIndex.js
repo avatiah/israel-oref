@@ -1,60 +1,77 @@
+import React, { useEffect, useState } from "react";
+
+// Простой круговой индикатор
 export default function ThreatIndex({ data }) {
-  const weights = {
-    military: 0.30,
-    rhetoric: 0.15,
-    diplomacy: 0.10,
-    proxies: 0.20,
-    cyber: 0.10,
-    alerts: 0.15,
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    if (!data) return;
+    console.log("ThreatIndex data:", data);
+
+    // Суммируем все значения компонентов (0-5) и переводим в процент
+    const sum =
+      (data.military || 0) +
+      (data.rhetoric || 0) +
+      (data.diplomacy || 0) +
+      (data.proxies || 0) +
+      (data.cyber || 0) +
+      (data.alerts || 0);
+
+    const maxSum = 5 * 6; // максимальное значение = 5*6 компонентов
+    setTotal(Math.round((sum / maxSum) * 100));
+  }, [data]);
+
+  // Цвет по проценту угрозы
+  const getColor = (percent) => {
+    if (percent < 30) return "#4CAF50"; // зелёный
+    if (percent < 60) return "#FFC107"; // жёлтый
+    if (percent < 80) return "#FF9800"; // оранжевый
+    return "#F44336"; // красный
   };
 
-  const score =
-    data.military * weights.military +
-    data.rhetoric * weights.rhetoric +
-    data.diplomacy * weights.diplomacy +
-    data.proxies * weights.proxies +
-    data.cyber * weights.cyber +
-    data.alerts * weights.alerts;
-
-  const percent = Math.round((score / 5) * 100);
-
-  function getColor(p) {
-    if (p <= 20) return "#22c55e";
-    if (p <= 40) return "#eab308";
-    if (p <= 60) return "#f97316";
-    if (p <= 80) return "#ef4444";
-    return "#7f1d1d";
-  }
-
-  function getLabel(p) {
-    if (p <= 20) return "Ситуация стабильна";
-    if (p <= 40) return "Растущее напряжение";
-    if (p <= 60) return "Высокий риск эскалации";
-    if (p <= 80) return "Предэскалационная фаза";
-    return "Критическая угроза";
-  }
-
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Индекс военной угрозы</h2>
-      <div
-        style={{
-          margin: "20px auto",
-          width: "220px",
-          height: "220px",
-          borderRadius: "50%",
-          background: `conic-gradient(${getColor(percent)} ${percent}%, #1f2937 ${percent}%)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white",
-          fontSize: "32px",
-          fontWeight: "bold",
-        }}
-      >
-        {percent}%
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        margin: "40px 0",
+      }}
+    >
+      <svg width="200" height="200">
+        <circle
+          cx="100"
+          cy="100"
+          r="90"
+          stroke="#333"
+          strokeWidth="20"
+          fill="none"
+        />
+        <circle
+          cx="100"
+          cy="100"
+          r="90"
+          stroke={getColor(total)}
+          strokeWidth="20"
+          fill="none"
+          strokeDasharray={`${(total * 565) / 100}, 565`} // 2*π*r ≈ 565
+          strokeLinecap="round"
+          transform="rotate(-90 100 100)"
+        />
+        <text
+          x="100"
+          y="110"
+          textAnchor="middle"
+          fontSize="36"
+          fill={getColor(total)}
+          fontWeight="bold"
+        >
+          {total}%
+        </text>
+      </svg>
+      <div style={{ marginTop: "10px", color: "#aaa" }}>
+        Threat Index
       </div>
-      <h3 style={{ color: getColor(percent) }}>{getLabel(percent)}</h3>
     </div>
   );
 }
