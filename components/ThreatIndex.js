@@ -28,23 +28,9 @@ export default function ThreatIndex({ data }) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        margin: "40px 0",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "40px 0" }}>
       <svg width="200" height="200">
-        <circle
-          cx="100"
-          cy="100"
-          r="90"
-          stroke="#333"
-          strokeWidth="20"
-          fill="none"
-        />
+        <circle cx="100" cy="100" r="90" stroke="#333" strokeWidth="20" fill="none" />
         {total > 0 && (
           <circle
             cx="100"
@@ -58,21 +44,12 @@ export default function ThreatIndex({ data }) {
             transform="rotate(-90 100 100)"
           />
         )}
-        <text
-          x="100"
-          y="110"
-          textAnchor="middle"
-          fontSize="36"
-          fill={getColor(total)}
-          fontWeight="bold"
-        >
+        <text x="100" y="110" textAnchor="middle" fontSize="36" fill={getColor(total)} fontWeight="bold">
           {total}%
         </text>
       </svg>
-
       <div style={{ marginTop: "10px", color: "#aaa" }}>Threat Index</div>
-
-      {/* 🔹 Отладка */}
+      {/* Отладка JSON */}
       <div style={{ marginTop: "20px", color: "white" }}>
         <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
