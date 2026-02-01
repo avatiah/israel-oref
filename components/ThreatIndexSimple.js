@@ -1,5 +1,4 @@
 export default function ThreatIndexSimple({ index }) {
-  // Защита от undefined
   const percent = typeof index === "number" ? index : 0;
 
   const getColor = (p) => {
