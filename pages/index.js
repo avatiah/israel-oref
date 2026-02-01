@@ -3,65 +3,75 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const [data, setData] = useState(null);
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch('/api/data');
-      const json = await res.json();
-      setData(json);
-    } catch (e) { console.error("Sync Error"); }
-  };
-
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000); // Обновление раз в минуту
-    return () => clearInterval(interval);
+    const load = () => fetch('/api/data').then(r => r.json()).then(d => setData(d));
+    load();
+    const int = setInterval(load, 60000);
+    return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>&gt; INITIALIZING_RADAR...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>&gt; LOADING_OSINT_MAP...</div>;
+
+  const MapZone = ({ id, path, active }) => (
+    <path d={path} fill={active ? '#ff0000' : '#111'} stroke="#0f0" strokeWidth="1" className={active ? 'pulse' : ''} />
+  );
 
   return (
-    <div style={{ background: '#000', color: '#0f0', minHeight: '100vh', fontFamily: 'monospace', padding: '10px' }}>
-      {/* HEADER */}
-      <div style={{ border: '1px solid #0f0', padding: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>ISR_STRIKE_RADAR</div>
-        <div style={{ fontSize: '0.7rem', color: data.index > 70 ? '#f00' : '#0f0' }}>STATUS: ACTIVE</div>
-      </div>
+    <div style={{ background: '#000', color: '#0f0', minHeight: '100vh', fontFamily: 'monospace', padding: '15px' }}>
+      <header style={{ border: '1px solid #0f0', padding: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{fontWeight:'bold'}}>ISR_RADAR_PRO</div>
+        <div style={{fontSize:'0.7rem'}}>LAST_SYNC: {new Date(data.last_update).toLocaleTimeString()}</div>
+      </header>
 
-      <div className="main-grid">
-        {/* INDEX SECTION */}
-        <div style={{ border: '1px solid #0f0', padding: '15px', textAlign: 'center', marginBottom: '15px' }}>
-          <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>AGGREGATED_TENSION_INDEX</div>
-          <div style={{ fontSize: '4rem', fontWeight: 'bold', color: data.index > 65 ? '#f00' : '#0f0' }}>{data.index}%</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', marginTop: '10px' }}>
-            {Object.entries(data.blocks).map(([k, v]) => (
-              <div key={k} style={{ fontSize: '0.6rem', border: '1px solid #333', padding: '4px' }}>
-                {k.replace('_', ' ')}: {v}%
+      <div className="layout">
+        <aside className="sidebar">
+          {/* INDEX BOX */}
+          <div style={{ border: '1px solid #0f0', padding: '20px', textAlign: 'center', marginBottom: '15px' }}>
+            <div style={{fontSize:'0.7rem', opacity:0.6}}>TENSION_INDEX</div>
+            <div style={{fontSize:'4rem', fontWeight:'bold', color: data.index > 60 ? '#f00' : '#0f0'}}>{data.index}%</div>
+          </div>
+
+          {/* SMART MAP */}
+          <div style={{ border: '1px solid #0f0', padding: '15px', textAlign: 'center' }}>
+            <div style={{fontSize:'0.6rem', marginBottom:'10px'}}>GEOGRAPHIC_THREAT_MAP</div>
+            <svg viewBox="0 0 100 200" style={{ height: '250px' }}>
+              {/* Simplified Map Paths */}
+              <MapZone id="north" active={data.geo.north} path="M40,10 L60,10 L65,30 L35,35 Z" />
+              <MapZone id="center" active={data.geo.center} path="M35,35 L65,30 L60,70 L30,75 Z" />
+              <MapZone id="westbank" active={data.geo.westbank} path="M50,45 L65,45 L65,85 L50,90 Z" />
+              <MapZone id="gaza" active={data.geo.gaza} path="M25,80 L35,80 L35,95 L25,100 Z" />
+              <MapZone id="south" active={data.geo.south} path="M30,75 L60,70 L55,180 L20,130 Z" />
+            </svg>
+            <div style={{fontSize:'0.5rem', marginTop:'10px', textAlign:'left'}}>
+               {Object.entries(data.geo).map(([k, v]) => (
+                 <div key={k} style={{color: v ? '#f00' : '#333'}}>• {k.toUpperCase()}: {v ? 'ALERT' : 'STABLE'}</div>
+               ))}
+            </div>
+          </div>
+        </aside>
+
+        <main className="feed">
+          <div style={{ border: '1px solid #0f0', padding: '15px', height: '100%' }}>
+            <div style={{borderBottom:'1px solid #0f0', paddingBottom:'10px', marginBottom:'15px'}}>LIVE_INTEL_STREAM</div>
+            {data.signals.map((s, i) => (
+              <div key={i} style={{ marginBottom: '15px', borderBottom: '1px solid #111', paddingBottom: '10px' }}>
+                <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.7rem', color: s.color}}>
+                  <span>[{s.importance}]</span>
+                  <a href={s.link} target="_blank" style={{color:'#0f0', textDecoration:'none'}}>[LINK]</a>
+                </div>
+                <div style={{fontSize:'0.9rem', marginTop:'5px'}}>{s.title}</div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* FEED SECTION */}
-        <div style={{ border: '1px solid #0f0', padding: '10px' }}>
-          <div style={{ fontSize: '0.8rem', borderBottom: '1px solid #0f0', paddingBottom: '5px', marginBottom: '10px' }}>&gt; LIVE_INTEL_STREAM</div>
-          {data.signals.map((s, i) => (
-            <div key={i} style={{ borderBottom: '1px solid #222', padding: '10px 0', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ color: s.color, fontSize: '0.65rem', fontWeight: 'bold' }}>[{s.importance}]</span>
-                <span style={{ color: '#555', fontSize: '0.65rem' }}>{s.time}</span>
-              </div>
-              <div style={{ fontSize: '0.85rem', lineHeight: '1.3' }}>{s.title}</div>
-              <a href={s.link} target="_blank" style={{ color: '#0f0', fontSize: '0.65rem', marginTop: '5px', textDecoration: 'none', border: '1px solid #0f0', width: 'fit-content', padding: '1px 4px' }}>OPEN_SOURCE</a>
-            </div>
-          ))}
-        </div>
+        </main>
       </div>
 
-      <style jsx>{`
-        .main-grid { display: flex; flexDirection: column; }
-        @media (min-width: 768px) {
-          .main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 15px; }
-        }
+      <style jsx global>{`
+        .layout { display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 768px) { .layout { flex-direction: row; } .sidebar { width: 300px; } .feed { flex-grow: 1; } }
+        .pulse { animation: mapPulse 1.5s infinite; }
+        @keyframes mapPulse { 0% { fill: #300; } 50% { fill: #f00; } 100% { fill: #300; } }
+        body { background: #000; margin: 0; }
       `}</style>
     </div>
   );
