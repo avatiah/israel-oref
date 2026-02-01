@@ -2,59 +2,77 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/data', { cache: 'no-store' });
-        const json = await res.json();
-        setData(json);
-      } catch (e) {
-        console.error("Fetch error:", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
+    fetch('/api/data', { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) throw new Error('CONNECTION_LOST');
+        return res.json();
+      })
+      .then(json => setData(json))
+      .catch(err => setError(err.message));
   }, []);
 
-  if (loading) return <div style={{background:'#000', color:'#0f0', padding:'20px', fontFamily:'monospace'}}> &gt; CONNECTING_TO_THREAT_ENGINE... </div>;
-  if (!data) return <div style={{background:'#000', color:'#f00', padding:'20px', fontFamily:'monospace'}}> [!] SYSTEM_OFFLINE </div>;
+  if (error) return <div style={{backgroundColor:'#000', color:'#f00', padding:'20px', fontFamily:'monospace'}}>[!] CRITICAL_ERROR: {error}</div>;
+  if (!data) return <div style={{backgroundColor:'#000', color:'#0f0', padding:'20px', fontFamily:'monospace'}}>&gt; SYNCHRONIZING_WITH_INTEL_NETWORK...</div>;
+
+  const isAlert = data.index > 70;
 
   return (
     <div style={{ backgroundColor: '#000', color: '#0f0', minHeight: '100vh', fontFamily: 'monospace', padding: '20px' }}>
-      <header style={{ border: '1px solid #0f0', padding: '10px', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>ADMIN_THREAT_DASHBOARD</h2>
-        <small>STATUS: ACTIVE // OSINT_STREAM_ENABLED</small>
+      {/* HEADER */}
+      <header style={{ border: '1px solid #0f0', padding: '15px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.2rem' }}>THREAT_ENGINE_ADMIN // ISR_v1.0</h1>
+          <div style={{ fontSize: '0.7rem' }}>UPLINK: ACTIVE | ENCRYPTION: AES-256</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ color: isAlert ? '#f00' : '#0f0' }}>STATUS: {isAlert ? 'CRITICAL_DANGER' : 'MONITORING'}</div>
+          <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>{data.last_update}</div>
+        </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '20px' }}>
-        {/* Индекс */}
-        <div style={{ border: '1px solid #0f0', padding: '20px', minWidth: '200px', textAlign: 'center' }}>
-          <div>TENSION_INDEX</div>
-          <div style={{ fontSize: '4rem', fontWeight: 'bold' }}>{data.index}%</div>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '20px' }}>
+        {/* ANALYTICS COLUMN */}
+        <aside>
+          <div style={{ border: '1px solid #0f0', padding: '20px', textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ fontSize: '0.8rem', marginBottom: '10px' }}>TENSION_INDEX</div>
+            <div style={{ fontSize: '5rem', fontWeight: 'bold', textShadow: isAlert ? '0 0 15px #f00' : '0 0 10px #0f0', color: isAlert ? '#f00' : '#0f0' }}>
+              {data.index}%
+            </div>
+          </div>
 
-        {/* Таблица */}
-        <div style={{ border: '1px solid #0f0', flexGrow: 1, padding: '10px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #0f0' }}>
-                <th style={{ textAlign: 'left', padding: '5px' }}>SIGNAL_FEED</th>
-                <th style={{ textAlign: 'right', padding: '5px' }}>SOURCE</th>
-              </tr>
-            </thead>
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #0f0' }}>
             <tbody>
-              {data.signals && data.signals.map((s, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #222' }}>
-                  <td style={{ padding: '8px 5px', fontSize: '0.9rem' }}>{s.title}</td>
-                  <td style={{ textAlign: 'right', fontSize: '0.7rem', color: '#666' }}>{s.source}</td>
+              {Object.entries(data.blocks).map(([k, v]) => (
+                <tr key={k}>
+                  <td style={{ border: '1px solid #0f0', padding: '10px', fontSize: '0.7rem' }}>{k.toUpperCase()}</td>
+                  <td style={{ border: '1px solid #0f0', padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>{v}%</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </aside>
+
+        {/* SIGNALS COLUMN */}
+        <main style={{ border: '1px solid #0f0', padding: '20px' }}>
+          <h3 style={{ marginTop: 0, borderBottom: '1px solid #0f0', paddingBottom: '10px' }}>&gt; LIVE_INTEL_STREAM</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              {data.signals.map((s, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #111' }}>
+                  <td style={{ padding: '12px 5px', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#555' }}>[{i}]</span> {s.title}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <a href={s.link} target="_blank" rel="noreferrer" style={{ color: '#0f0', textDecoration: 'none', border: '1px solid #0f0', padding: '2px 5px', fontSize: '0.7rem' }}>LINK</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </main>
       </div>
     </div>
   );
