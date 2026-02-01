@@ -1,65 +1,44 @@
 export default async function handler(req, res) {
   try {
-    // Список источников: общие новости + профессиональные OSINT сводки
-    const sources = [
-      'https://news.google.com/rss/search?q=Israel+OSINT+analysis+military+intelligence&hl=en-US',
-      'https://news.google.com/rss/search?q=ISW+Israel+Hezbollah+Iran+update&hl=en-US'
-    ];
-    
-    const response = await fetch(sources[Math.floor(Math.random() * sources.length)]);
+    const RSS_URL = 'https://news.google.com/rss/search?q=Israel+military+intelligence+analysis+forecast&hl=en-US';
+    const response = await fetch(RSS_URL);
     const xml = await response.text();
+
     const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]).slice(1, 20);
     const pubDates = [...xml.matchAll(/<pubDate>(.*?)<\/pubDate>/g)].map(m => m[1]).slice(1, 20);
 
-    // 1. Фактор "Информационного взрыва"
-    // Считаем количество новостей за последние 60 минут
+    // 1. Детектор "Информационного взрыва"
     const now = new Date();
-    const recentSignals = pubDates.filter(date => {
-      const diff = (now - new Date(date)) / (1000 * 60); // разница в минутах
-      return diff < 60;
-    }).length;
+    const burstCount = pubDates.filter(d => (now - new Date(d)) / 60000 < 45).length;
+    const burstFactor = Math.min(burstCount * 7, 40);
 
-    const burstFactor = Math.min(recentSignals * 5, 30); // До +30% к индексу за скорость
+    // 2. Sentiment Analysis (Прогноз экспертов)
+    let sentimentScore = 0;
+    let expertVerdict = "DATA_STREAM_STABLE";
 
-    // 2. Мониторинг Экспертных мнений
-    let expertAlert = false;
-    const signals = titles.map((t, i) => {
+    titles.forEach(t => {
       const text = t.toLowerCase();
-      
-      // Ищем маркеры профессиональной аналитики
-      const isExpert = /(analysis|forecast|expert|satellite+imagery|intelligence+report|isw)/.test(text);
-      if (isExpert && /(imminent|escalation|threat|preparation)/.test(text)) expertAlert = true;
-
-      let importance = 'LOW', color = '#555';
-      if (/(strike|attack|missile|barrage)/.test(text)) { importance = 'HIGH'; color = '#ff0000'; }
-      else if (isExpert) { importance = 'OSINT'; color = '#0088ff'; } // Выделяем аналитиков синим
-
-      return { 
-        title: t.split(' - ')[0], 
-        link: '#', 
-        importance, 
-        color,
-        isExpert,
-        time: new Date(pubDates[i]).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'})
-      };
+      if (/(imminent|high+probability|escalation|expected)/.test(text)) sentimentScore += 2;
+      if (/(strike|attack|offensive|war)/.test(text)) sentimentScore += 3;
     });
 
-    // Расчет индекса
-    const base = 10;
-    const expertBonus = expertAlert ? 25 : 0;
-    const finalIndex = Math.min(base + burstFactor + expertBonus + (signals.length * 2), 100);
+    if (sentimentScore > 15) expertVerdict = "HIGH_PROBABILITY_OF_ESCALATION";
+    else if (sentimentScore > 7) expertVerdict = "ELEVATED_TENSION_DETECTED";
+    else if (burstFactor > 25) expertVerdict = "SUDDEN_DATA_BURST_MONITORING";
+
+    const signals = titles.map((t, i) => ({
+      title: t.split(' - ')[0],
+      isExpert: /(analysis|report|isw|expert)/.test(t.toLowerCase()),
+      time: new Date(pubDates[i]).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'})
+    }));
 
     res.status(200).json({
-      last_update: now.toISOString(),
-      index: finalIndex,
-      factors: {
-        burst: burstFactor,
-        expert: expertBonus,
-        volume: signals.length
-      },
-      signals: signals.slice(0, 12)
+      index: Math.min(15 + burstFactor + (sentimentScore * 2), 100),
+      verdict: expertVerdict,
+      factors: { burst: burstFactor, sentiment: sentimentScore },
+      signals: signals.slice(0, 10)
     });
   } catch (e) {
-    res.status(500).json({ error: "OSINT_LINK_FAILURE" });
+    res.status(500).json({ error: "NODE_ERR" });
   }
 }
