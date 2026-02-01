@@ -5,27 +5,32 @@ export default function Home() {
   const [threatData, setThreatData] = useState(null);
 
   useEffect(() => {
-    fetch("/data/data.json", { cache: "no-store" }) // no-store, чтобы всегда свежие данные
-      .then(res => res.json())
-      .then(data => setThreatData(data))
-      .catch(err => console.error("Ошибка загрузки data.json:", err));
+    fetch("/data/data.json", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => setThreatData(data))
+      .catch((err) => console.error("Ошибка загрузки data.json:", err));
   }, []);
 
   if (!threatData)
     return (
-      <div style={{ color: "white", textAlign: "center", marginTop: "50px" }}>
+      <div
+        style={{
+          color: "white",
+          textAlign: "center",
+          marginTop: "50px",
+        }}
+      >
         Загрузка данных...
       </div>
     );
 
-  // Переводим блоки 0–100 в 0–5 для ThreatIndex
   const dataForIndex = {
     military: threatData.blocks.military / 20,
     rhetoric: threatData.blocks.rhetoric / 20,
-    diplomacy: 2, // нет данных, ставим базовое
+    diplomacy: 2,
     proxies: threatData.blocks.regional / 20,
-    cyber: 1, // нет данных, базовое
-    alerts: 2 // нет данных, базовое
+    cyber: 1,
+    alerts: 2,
   };
 
   return (
@@ -35,18 +40,17 @@ export default function Home() {
         minHeight: "100vh",
         color: "white",
         fontFamily: "Arial, sans-serif",
-        padding: "20px"
+        padding: "20px",
       }}
     >
       <h1 style={{ textAlign: "center" }}>OSINT Security Radar — Израиль</h1>
       <p style={{ textAlign: "center", color: "#888" }}>
-        Последнее обновление: {new Date(threatData.last_update).toLocaleString()}
+        Последнее обновление:{" "}
+        {new Date(threatData.last_update).toLocaleString()}
       </p>
 
-      {/* 🔹 Threat Index */}
       <ThreatIndex data={dataForIndex} />
 
-      {/* 🔹 Последние сигналы */}
       <section style={{ maxWidth: "900px", margin: "40px auto" }}>
         <h2 style={{ textAlign: "center" }}>Последние аналитические сигналы</h2>
         <div
@@ -54,7 +58,7 @@ export default function Home() {
             display: "flex",
             flexDirection: "column",
             gap: "15px",
-            marginTop: "20px"
+            marginTop: "20px",
           }}
         >
           {threatData.signals.map((s, i) => (
@@ -68,7 +72,7 @@ export default function Home() {
                 padding: "15px",
                 borderRadius: "8px",
                 color: "white",
-                textDecoration: "none"
+                textDecoration: "none",
               }}
             >
               <div style={{ fontWeight: "bold" }}>{s.title}</div>
@@ -85,7 +89,7 @@ export default function Home() {
           textAlign: "center",
           padding: "20px",
           fontSize: "14px",
-          color: "#888"
+          color: "#888",
         }}
       >
         © 2026 OSINT Dashboard | Данные обновляются автоматически
