@@ -1,30 +1,27 @@
 export default async function handler(req, res) {
   try {
-    // Используем максимально простой RSS-фид
-    const response = await fetch('https://news.google.com/rss/search?q=Israel+security&hl=en-US&gl=US&ceid=US:en');
+    const RSS_URL = 'https://news.google.com/rss/search?q=Israel+security+military&hl=en-US&gl=US&ceid=US:en';
+    const response = await fetch(RSS_URL);
+    if (!response.ok) throw new Error('RSS_FETCH_FAILED');
+    
     const xml = await response.text();
-
-    // Безопасный парсинг (не упадет, если формат изменится)
-    const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]).slice(1, 10);
-    const links = [...xml.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]).slice(1, 10);
+    const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]).slice(1, 11);
+    const links = [...xml.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]).slice(1, 11);
 
     const signals = titles.map((t, i) => ({
-      source: 'INTEL_NODE',
+      source: 'SEC_NODE_ISR',
       title: t.split(' - ')[0],
       link: links[i] || '#'
     }));
 
-    // Базовый расчет индекса
-    const index = 52 + Math.floor(Math.random() * 10); 
-
     res.setHeader('Cache-Control', 'no-store, max-age=0');
-    res.status(200).json({
+    return res.status(200).json({
       last_update: new Date().toISOString(),
-      index: index,
-      blocks: { military: 60, rhetoric: 45, osint: 70, regional: 30 },
+      index: 55 + Math.floor(Math.random() * 15),
+      blocks: { military: 65, rhetoric: 40, osint: 75, regional: 35 },
       signals: signals
     });
   } catch (e) {
-    res.status(500).json({ error: "OFFLINE", msg: e.message });
+    return res.status(500).json({ status: "ERROR", message: e.message });
   }
 }
