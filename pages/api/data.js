@@ -9,37 +9,40 @@ export default async function handler(req, res) {
 
     titles.forEach(t => {
       const text = t.toLowerCase();
-      // Israel context
       if (/(missile|attack|clash|bombardment|strike|explosion|idf)/.test(text)) kinetic += 1.8;
       if (/(intelligence|forecast|warning|threat|alert|hezbollah|tensions)/.test(text)) strategic += 1.2;
       if (/(ceasefire|reopening|negotiations|humanitarian|opening|truce|peace|aid)/.test(text)) deescalation += 2.5;
-      // US-Iran context
       if (/(pentagon|carrier|us navy|white house|nuclear|iran strike)/.test(text)) usIran += 4.5;
     });
 
     const liveIndex = Math.max(15, Math.min(Math.round(20 + (kinetic*3) + (strategic*4) - (deescalation*2.5)), 98));
     const iranStrikeIndex = Math.max(5, Math.min(Math.round(5 + usIran), 100));
 
+    // КОРРЕКЦИЯ ПРОГНОЗА: если индекс Ирана высок, прогноз по Израилю не может быть низким
+    const baseForecast = liveIndex * (deescalation > strategic ? 0.85 : 1.15);
+    const iranInfluence = iranStrikeIndex > 50 ? (iranStrikeIndex * 0.4) : 0;
+    const finalForecast = Math.min(Math.round(baseForecast + iranInfluence), 100);
+
     res.status(200).json({
       live: {
         index: liveIndex,
         verdict: liveIndex > 70 ? 'HIGH_TENSION' : 'ELEVATED_STABILITY',
         breakdown: [
-          { name: 'KINETIC_ACTIVITY', value: Math.round(Math.min(kinetic * 3, 40)), desc: 'Direct combat and border incidents.' },
-          { name: 'STRATEGIC_PRESSURE', value: Math.round(Math.min(strategic * 4, 40)), desc: 'Threat assessments and intelligence.' },
-          { name: 'DE-ESCALATION_SIGNS', value: Math.round(Math.min(deescalation * 2.5, 20)), desc: 'Diplomatic progress (e.g. Rafah reopening).' }
+          { name: 'KINETIC_ACTIVITY', value: Math.round(Math.min(kinetic * 3, 40)), desc: 'Current tactical engagements.' },
+          { name: 'STRATEGIC_PRESSURE', value: Math.round(Math.min(strategic * 4, 40)), desc: 'Intelligence and threat reporting.' },
+          { name: 'DE-ESCALATION_SIGNS', value: Math.round(Math.min(deescalation * 2.5, 20)), desc: 'Diplomatic and humanitarian progress.' }
         ]
       },
       forecast: {
-        index: Math.max(15, Math.min(Math.round(liveIndex * (deescalation > strategic ? 0.85 : 1.15)), 100)),
-        verdict: deescalation > strategic ? 'STABILIZATION_LIKELY' : 'VOLATILITY_EXPECTED'
+        index: finalForecast,
+        verdict: finalForecast > 80 ? 'WAR_PROBABILITY_HIGH' : 'VOLATILITY_EXPECTED'
       },
       iran_strike: {
         index: iranStrikeIndex,
-        status: iranStrikeIndex > 60 ? 'IMMINENT_DANGER' : 'MONITORING_DETERRENCE',
+        status: iranStrikeIndex > 80 ? 'IMMINENT_DANGER' : 'MONITORING_DETERRENCE',
         desc: 'Probability of U.S. kinetic action against Iranian strategic assets.'
       },
-      key_argument: titles.find(t => /opening|reopens|analysis|ceasefire|iran/i.test(t))?.split(' - ')[0] || "Strategic shifts detected in regional de-escalation channels.",
+      key_argument: titles.find(t => /opening|reopens|analysis|iran|pentagon/i.test(t))?.split(' - ')[0] || "Strategic realignment in progress.",
       last_update: new Date().toISOString()
     });
   } catch (e) {
