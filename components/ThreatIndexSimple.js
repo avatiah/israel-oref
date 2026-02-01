@@ -1,5 +1,6 @@
 export default function ThreatIndexSimple({ index }) {
-  const percent = index || 0;
+  // Защита от undefined
+  const percent = typeof index === "number" ? index : 0;
 
   const getColor = (p) => {
     if (p <= 20) return "#4CAF50";
@@ -26,22 +27,11 @@ export default function ThreatIndexSimple({ index }) {
           strokeLinecap="round"
           transform="rotate(-90 90 90)"
         />
-        <text
-          x="90"
-          y="100"
-          textAnchor="middle"
-          fontSize="36"
-          fill={color}
-          fontWeight="bold"
-        >
+        <text x="90" y="100" textAnchor="middle" fontSize="36" fill={color} fontWeight="bold">
           {percent}%
         </text>
       </svg>
-      <div style={{ marginTop: "8px", color: "#aaa" }}>Threat Index</div>
-      {/* Отладка JSON */}
-      <div style={{ marginTop: "20px", color: "white" }}>
-        <pre>{JSON.stringify({ index }, null, 2)}</pre>
-      </div>
+      <div style={{ marginTop: "8px", color: "#aaa" }}>Current Tension Index</div>
     </div>
   );
 }
