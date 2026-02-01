@@ -1,37 +1,37 @@
 export default async function handler(req, res) {
   try {
-    // Используем RSS ленту Reuters, которую легко парсить текстом
-    const RSS_URL = 'https://www.reutersagency.com/feed/?best-topics=world-news&post_type=best';
+    // Используем Google News для поиска по ключевым словам "Israel OSINT"
+    const RSS_URL = 'https://news.google.com/rss/search?q=Israel+security+military&hl=en-US&gl=US&ceid=US:en';
     const response = await fetch(RSS_URL);
     const xml = await response.text();
 
-    // Извлекаем заголовки через регулярные выражения (чтобы не ставить парсер)
-    const titles = [...xml.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)].map(m => m[1]);
+    // Более гибкий парсинг заголовков и ссылок
+    const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]).slice(1);
     const links = [...xml.matchAll(/<link>(.*?)<\/link>/g)].map(m => m[1]).slice(1);
 
-    const signals = titles.slice(0, 10).map((t, i) => ({
-      source: 'REUTERS_LIVE',
-      title: t,
+    const signals = titles.slice(0, 12).map((t, i) => ({
+      source: 'INTEL_STREAM',
+      title: t.replace(' - Google News', ''),
       link: links[i] || '#'
     }));
 
-    // Логика анализа угроз
-    const keywords = {
-      military: ['missile', 'strike', 'idf', 'hezbollah', 'iran', 'attack', 'war'],
-      rhetoric: ['warns', 'threatens', 'condemns', 'vows'],
-      regional: ['border', 'lebanon', 'syria', 'gaza', 'tehran']
-    };
+    // Базовые веса блоков
+    let blocks = { military: 35, rhetoric: 25, osint_activity: 45, regional: 20 };
 
-    let blocks = { military: 30, rhetoric: 20, osint_activity: 40, regional: 15 };
-
+    // Анализ контента для изменения индекса
+    const keywords = ['attack', 'missile', 'idf', 'iran', 'strike', 'hezbollah', 'explosion', 'border', 'war'];
+    
     signals.forEach(s => {
       const text = s.title.toLowerCase();
-      if (keywords.military.some(k => text.includes(k))) blocks.military += 12;
-      if (keywords.rhetoric.some(k => text.includes(k))) blocks.rhetoric += 10;
-      if (keywords.regional.some(k => text.includes(k))) blocks.regional += 5;
+      keywords.forEach(word => {
+        if (text.includes(word)) {
+          blocks.military += 5;
+          blocks.osint_activity += 3;
+        }
+      });
     });
 
-    // Ограничиваем блоки до 100
+    // Ограничение 100%
     Object.keys(blocks).forEach(k => blocks[k] = Math.min(blocks[k], 100));
 
     const index = Math.round(
@@ -46,6 +46,6 @@ export default async function handler(req, res) {
       signals: signals
     });
   } catch (error) {
-    res.status(500).json({ error: "API_FETCH_ERROR", details: error.message });
+    res.status(500).json({ error: "FEED_OFFLINE", details: error.message });
   }
 }
