@@ -6,7 +6,6 @@ const Gauge = ({ value, range, label, status, color }) => {
   return (
     <div className="gauge-box">
       <div className="gauge-visual">
-        {/* Четкие сектора: Зеленый, Желтый, Красный */}
         <div className="gauge-arc-sectors"></div>
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
         <div className="gauge-status" style={{ color: color }}>{status}</div>
@@ -50,7 +49,7 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div className="loading">RESYNCING_V41_PLATINUM...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>RESYNCING_V41_PLATINUM...</div>;
 
   return (
     <div className="dashboard">
@@ -59,41 +58,44 @@ export default function Home() {
         <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
+      {/* TOP SECTION */}
       <div className="main-layout">
         <section className="gauges-area">
           <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
         </section>
 
-        <section className="card rationale-box">
+        <section className="card">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
             <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
-            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official State Dept warnings</div>
+            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Final official ultimatums</div>
             <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Diplomatic/Personnel evacuation</div>
             <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace Closure</div>
           </div>
         </section>
       </div>
 
+      {/* MID SECTION */}
       <div className="secondary-grid">
         <section className="card">
           <div className="section-title white">TIMELINE PROJECTION</div>
           <div className="timeline white">
-            <div>NOW: <b>{data.israel.val}%</b></div>
-            <div>+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
-            <div>+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
+            <div className="t-item">NOW: <b>{data.israel.val}%</b></div>
+            <div className="t-item">+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
+            <div className="t-item">+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
           </div>
         </section>
 
         <section className="card">
           <div className="section-title white">MARKET INDICATORS</div>
-          <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color:'#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>3.14</b> <span>→</span></div>
-          <div className="m-row white">Polymarket: <b>18%</b> <span style={{color:'#0f0'}}>↑</span></div>
+          <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color: '#f00'}}>↓</span></div>
+          <div className="m-row white">USD/ILS: <b>3.14</b> <span className="white">→</span></div>
+          <div className="m-row white">Polymarket: <b>18%</b> <span className="green">↑</span></div>
         </section>
       </div>
 
+      {/* EXPERT SECTION */}
       <section className="card">
         <div className="section-title green">VERIFIED EXPERT ANALYTICS (ISW / WSJ / CENTCOM)</div>
         {data.experts.map((e, i) => (
@@ -104,8 +106,9 @@ export default function Home() {
         ))}
       </section>
 
+      {/* LOG SECTION - BACK TO ORIGINAL STYLE */}
       <section className="card log-card">
-        <div className="section-title white">RAW_SIGNAL_FEED (DYNAMIC_OSINT)</div>
+        <div className="section-title white">RAW_SIGNAL_FEED (02-FEB-2026)</div>
         <div className="feed-box">
           {(data.feed || data.logs).map((l, i) => (
             <div key={i} className="log-entry white">
@@ -125,7 +128,6 @@ export default function Home() {
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF0000; margin-bottom: 15px; padding-bottom: 8px; }
         .title { margin: 0; font-size: 1.1rem; font-weight: 900; }
         .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
-        .loading { background:#000; color:#0f0; height:100vh; display:flex; align-items:center; justifyContent:center; font-family:monospace; }
         
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
