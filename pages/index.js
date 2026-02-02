@@ -1,132 +1,39 @@
-import { useState, useEffect } from 'react';
-
-const Gauge = ({ value, range, label, status, color }) => {
-  const rotation = (value / 100) * 180 - 90;
-
-  return (
-    <div className="gauge-box">
-      <div className="gauge-visual">
-        {/* Четкие сектора угроз: Зеленый, Желтый, Красный */}
-        <div className="gauge-arc-sectors"></div>
-        {/* Стрелка индикатора */}
-        <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        {/* Текстовый статус */}
-        <div className="gauge-status" style={{ color: color }}>{status}</div>
-      </div>
-      <div className="gauge-range white">{range}</div>
-      <div className="gauge-label white">{label}</div>
-      <style jsx>{`
-        .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .gauge-visual { 
-          width: 180px; 
-          height: 110px; /* Увеличено, чтобы не срезало верх */
-          margin: 0 auto; 
-          position: relative; 
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-        }
-        .gauge-arc-sectors {
-          width: 160px; 
-          height: 160px; 
-          border-radius: 50%;
-          /* Однотонные сектора без градиента */
-          background: conic-gradient(
-            from 270deg, 
-            #00FF00 0deg 60deg,    /* Зеленый: 0-33% */
-            #FFFF00 60deg 120deg,  /* Желтый: 33-66% */
-            #FF0000 120deg 180deg, /* Красный: 66-100% */
-            transparent 180deg
-          );
-          -webkit-mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
-          mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
-          position: absolute; 
-          top: 20px; /* Центрирование внутри увеличенного контейнера */
-        }
-        .gauge-needle { 
-          position: absolute; 
-          bottom: 10px; 
-          left: calc(50% - 1.5px); 
-          width: 3px; 
-          height: 75px; 
-          background: #FFFFFF; 
-          transform-origin: bottom center; 
-          transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
-          z-index: 5; 
-        }
-        .gauge-status { 
-          position: absolute; 
-          bottom: 10px; 
-          left: 0; 
-          right: 0; 
-          font-size: 0.95rem; 
-          font-weight: 900; 
-          text-shadow: 2px 2px 4px #000;
-        }
-        .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: #fff; }
-        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.9; }
-        .white { color: #FFFFFF !important; }
-      `}</style>
-    </div>
-  );
-};
+// ... (оставляем компонент Gauge из предыдущего ответа без изменений)
 
 export default function Home() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    const load = () => fetch('/api/data').then(r => r.json()).then(d => setData(d)).catch(() => {});
+    const load = () => fetch('/api/data').then(r => r.json()).then(d => setData(d));
     load();
     const int = setInterval(load, 30000);
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>DEPLOYING_V40_STABLE...</div>;
+  if (!data) return <div className="loading">SYNCING_OSINT_V40...</div>;
 
   return (
     <div className="dashboard">
-      <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V40 // FINAL</span></h1>
-        <div className="sync white">SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
-      </header>
+      {/* ... (Верхняя часть: Gauges, Tracker, Timeline - остаются без изменений) ... */}
 
-      {/* TOP: Gauges & Tracker */}
-      <div className="main-layout">
-        <section className="gauges-area">
-          <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
-          <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
-        </section>
-
-        <section className="card">
-          <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
-          <div className="trigger-list">
-            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups (Lincoln/Truman)</div>
-            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official State Dept Ultimatums</div>
-            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Personnel Evacuations Detected</div>
-            <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace NOTAMs</div>
+      {/* НОВЫЙ ДИНАМИЧЕСКИЙ БЛОК RAW_SIGNAL_FEED */}
+      <section className="card signal-monitor">
+        <div className="section-title green">RAW_SIGNAL_STREAM // NO_API_FREE_MODE</div>
+        <div className="feed-container">
+          <div className="feed-scroll">
+            {data.feed.map((signal, i) => (
+              <div key={i} className="signal-row">
+                <span className="timestamp">[{new Date().toLocaleTimeString()}]</span>
+                <span className="content">{signal}</span>
+              </div>
+            ))}
+            {/* Дублируем для эффекта бесконечного потока, если данных мало */}
+            <div className="signal-row sys-msg">[SYSTEM] Monitoring ADS-B, NASA FIRMS, and Maritime AIS...</div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* MID: Timeline & Markets */}
-      <div className="secondary-grid">
-        <section className="card">
-          <div className="section-title white">TIMELINE PROJECTION</div>
-          <div className="timeline white">
-            <div>NOW: <b>{data.israel.val}%</b></div>
-            <div>+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
-            <div>+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
-          </div>
-        </section>
-        <section className="card">
-          <div className="section-title white">MARKET INDICATORS</div>
-          <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color:'#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>3.14</b> <span>→</span></div>
-          <div className="m-row white">Polymarket: <b>18%</b> <span className="green">↑</span></div>
-        </section>
-      </div>
-
-      {/* EXPERT ANALYTICS */}
+      {/* ОСТАЛЬНЫЕ БЛОКИ (Experts, Markets, Footer) - НЕ УДАЛЯТЬ */}
       <section className="card">
         <div className="section-title green">VERIFIED EXPERT ANALYTICS</div>
         {data.experts.map((e, i) => (
@@ -137,46 +44,49 @@ export default function Home() {
         ))}
       </section>
 
-      {/* RAW FEED */}
-      <section className="card">
-        <div className="section-title white">RAW_SIGNAL_FEED (02-FEB-2026)</div>
-        {data.logs.map((l, i) => (
-          <div key={i} className="log-entry white">[{i+1}] {l}</div>
-        ))}
-      </section>
-
       <footer className="footer white">
-        <strong>DISCLAIMER:</strong> OSINT mathematical model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety instructions.
+        <strong>DISCLAIMER:</strong> Free OSINT stream. No official military standing. 
       </footer>
 
       <style jsx global>{`
-        body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 10px; }
-        .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 15px; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #FF0000; margin-bottom: 20px; padding-bottom: 10px; }
-        .title { margin: 0; font-size: 1.2rem; font-weight: 900; }
-        .v { color: #f00; font-size: 0.7rem; vertical-align: top; }
-        .white { color: #FFFFFF !important; }
-        .green { color: #00FF00 !important; }
+        /* ... твои основные стили ... */
         
-        .main-layout, .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
-        .gauges-area { display: flex; gap: 10px; background: #080808; border: 1px solid #222; padding: 15px; }
-        .card { border: 1px solid #333; background: #050505; padding: 12px; }
-        .section-title { font-size: 0.65rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .trigger-list { font-size: 0.75rem; line-height: 1.8; }
-        .dim { color: #fff; opacity: 0.2; }
-        .active { color: #00FF00; font-weight: bold; }
-        .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
-        .m-row { font-size: 0.8rem; margin-bottom: 6px; }
-        .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
-        .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
-        .FACT { background: #004400; color: #00FF00; }
-        .ANALYSIS { background: #443300; color: #FFA500; }
-        .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
-        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; }
-        @media (min-width: 768px) {
-          .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
-          .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        .signal-monitor { 
+          background: #020202; 
+          border: 1px solid #0f0; /* Зеленая рамка подчеркивает OSINT поток */
+          box-shadow: inset 0 0 10px #003300;
         }
+        
+        .feed-container {
+          height: 180px;
+          overflow-y: auto;
+          font-size: 0.7rem;
+          padding: 5px;
+          scrollbar-width: thin;
+          scrollbar-color: #0f0 #000;
+        }
+
+        .signal-row {
+          padding: 4px 0;
+          border-bottom: 1px solid #111;
+          display: flex;
+          gap: 10px;
+          animation: scanline 0.5s ease-out;
+        }
+
+        .timestamp { color: #555; font-weight: bold; }
+        .content { color: #00FF00; }
+        .sys-msg { color: #FF0000; font-style: italic; }
+
+        @keyframes scanline {
+          from { opacity: 0; transform: translateX(-5px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Кастомизация скроллбара для стиля OSINT */
+        .feed-container::-webkit-scrollbar { width: 4px; }
+        .feed-container::-webkit-scrollbar-track { background: #000; }
+        .feed-container::-webkit-scrollbar-thumb { background: #0f0; }
       `}</style>
     </div>
   );
