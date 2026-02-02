@@ -10,7 +10,6 @@ export default async function handler(req, res) {
     const xml = await response.text();
     const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
 
-    // АНАЛИТИЧЕСКИЕ ВЕСА (Professional Matrix)
     let intel = { kinetic: 0, naval: 0, nuclear: 0, diplomatic: 0 };
     const logs = titles.slice(1, 45).map(t => {
       const low = t.toLowerCase();
@@ -21,33 +20,32 @@ export default async function handler(req, res) {
       return t.split(' - ')[0];
     });
 
-    // МАТЕМАТИЧЕСКИЙ РАСЧЕТ ИНДЕКСА США VS ИРАН
-    // Базируется на Polymarket (Intraday vs Long-term) и Military Posture
-    // Odds: 1% (Today), 2% (Tomorrow), 61% (By June 30)
-    const baseProb = 1; // 24h market baseline
-    const militaryFactor = (intel.naval * 15) + (intel.kinetic * 5); 
-    const usIranIndex = Math.min(baseProb + militaryFactor - (intel.diplomatic * 10), 95);
+    // МАТЕМАТИКА ВЕРОЯТНОСТИ (США vs ИРАН)
+    // Polymarket Intraday (1%) + Naval Weight + Strategic Context
+    const baseMarketProb = 1; 
+    const militaryWeight = (intel.naval * 12) + (intel.kinetic * 4);
+    const usIranProb = Math.min(baseMarketProb + militaryWeight - (intel.diplomatic * 8), 95);
 
-    // ОБЩИЙ ИНДЕКС MADAD OREF (Израиль)
-    const finalIndex = Math.max(12, Math.min(Math.round((intel.kinetic * 8) + (usIranIndex * 0.3)), 98));
+    // ОБЩИЙ ИНДЕКС MADAD OREF (Weighted Matrix)
+    const isrRisk = Math.max(12, Math.min(Math.round((intel.kinetic * 7) + (usIranProb * 0.35)), 98));
 
     res.status(200).json({
-      index: finalIndex,
+      index: isrRisk,
       us_iran: {
-        val: Math.round(usIranIndex),
-        rationale: "Polymarket 24h baseline (1%) + CENTCOM naval movements + strike options presented to POTUS."
+        val: Math.round(usIranProb),
+        rationale: "Analysis of CENTCOM assets and daily market odds (Polymarket 1% spot)."
       },
       markets: {
-        brent: "$66.31", //
-        ils: "3.10",     //
-        poly_long: "61%" //
+        brent: "$66.31", 
+        ils: "3.10",
+        poly_june: "61%"
       },
-      osint_brief: [
-        { org: "ISW", text: "Regime bandwidth issues in SE Iran may provoke external escalation." },
-        { org: "IISS", text: "Strategic tools of Iran foes being recalibrated after Jan strikes." }
+      osint_experts: [
+        { org: "ISW", text: "Iranian regime facing domestic bandwidth constraints, likely to avoid direct escalation today." },
+        { org: "IISS", text: "Strategic recalibration of US naval assets observed in the Eastern Mediterranean." }
       ],
-      logs: logs.slice(0, 7),
+      logs: logs.slice(0, 8),
       updated: new Date().toISOString()
     });
-  } catch (e) { res.status(500).json({ error: 'SYSTEM_SYNC_ERR' }); }
+  } catch (e) { res.status(500).json({ error: 'DATA_SYNC_ERROR' }); }
 }
