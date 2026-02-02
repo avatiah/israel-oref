@@ -1,60 +1,52 @@
 import { useState, useEffect } from 'react';
 
 const Gauge = ({ value, range, label, status, color }) => {
+  // Вычисляем поворот стрелки: от -90 (лево) до +90 (право)
   const rotation = (value / 100) * 180 - 90;
 
   return (
     <div className="gauge-box">
-      <div className="gauge-container">
-        {/* Фоновая дуга с секторами */}
-        <div className="gauge-track">
-          <div className="sector green-s"></div>
-          <div className="sector yellow-s"></div>
-          <div className="sector red-s"></div>
-        </div>
-        {/* Перекрытие центра для создания эффекта кольца */}
-        <div className="gauge-cover"></div>
+      <div className="gauge-visual">
+        {/* Полукруг: сектора отрисованы через градиент с четкими границами */}
+        <div className="gauge-arc"></div>
         {/* Стрелка */}
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        {/* Текст внутри */}
+        {/* Статус (MODERATE/STANDBY) */}
         <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
       <div className="gauge-range white">{range}</div>
       <div className="gauge-label white">{label}</div>
       <style jsx>{`
-        .gauge-box { flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .gauge-container { 
-          width: 180px; height: 100px; /* Фиксированная высота без срезов */
-          position: relative; overflow: hidden; 
+        .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .gauge-visual { 
+          width: 180px; height: 100px; /* Фиксированная высота, чтобы не было пустоты снизу */
+          margin: 0 auto; position: relative; overflow: hidden; 
         }
-        .gauge-track {
-          position: absolute; width: 180px; height: 180px;
-          border-radius: 50%; background: #222; overflow: hidden;
-        }
-        /* Создаем 3 жестких сектора */
-        .sector { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; }
-        .green-s { background: #00FF00; transform: rotate(0deg) skewY(-30deg); }
-        .yellow-s { background: #FFFF00; transform: rotate(60deg) skewY(-30deg); }
-        .red-s { background: #FF0000; transform: rotate(120deg) skewY(-30deg); }
-        
-        .gauge-cover {
-          position: absolute; bottom: 0; left: 15px;
-          width: 150px; height: 150px; border-radius: 50%;
-          background: #050505; /* Цвет фона карточки */
-          z-index: 2;
+        .gauge-arc {
+          width: 160px; height: 160px; border-radius: 50%;
+          border: 12px solid transparent;
+          /* Отрисовка трех зон: Зеленая (0-33%), Желтая (33-66%), Красная (66-100%) */
+          background: conic-gradient(from 270deg, 
+            #00FF00 0deg 60deg, 
+            #FFFF00 60deg 120deg, 
+            #FF0000 120deg 180deg, 
+            transparent 180deg
+          );
+          -webkit-mask: radial-gradient(farthest-side, transparent 65px, #fff 66px);
+          mask: radial-gradient(farthest-side, transparent 65px, #fff 66px);
+          position: absolute; top: 10px; left: 10px;
         }
         .gauge-needle { 
-          position: absolute; bottom: 0; left: 50%; 
-          width: 3px; height: 80px; background: #fff; 
-          transform-origin: bottom center; transition: transform 1.5s ease; z-index: 10; 
+          position: absolute; bottom: 10px; left: calc(50% - 1.5px); 
+          width: 3px; height: 75px; background: #fff; 
+          transform-origin: bottom center; transition: transform 1.5s ease; z-index: 5; 
         }
         .gauge-status { 
-          position: absolute; bottom: 5px; width: 100%; text-align: center;
-          font-size: 0.9rem; font-weight: 900; z-index: 15; text-shadow: 2px 2px 4px #000;
+          position: absolute; bottom: 10px; left: 0; right: 0; 
+          font-size: 0.9rem; font-weight: 900; text-shadow: 2px 2px 4px #000; 
         }
-        .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
-        .gauge-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.8; }
-        .white { color: #FFFFFF; }
+        .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: #fff; }
+        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.8; }
       `}</style>
     </div>
   );
@@ -70,12 +62,12 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div className="loading">LOADING_SYSTEM_V42...</div>;
+  if (!data) return <div className="loading">SYNCING_SYSTEM_V43...</div>;
 
   return (
     <div className="dashboard">
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V42 // PLATINUM</span></h1>
+        <h1 className="title">MADAD OREF <span className="v">V43 // PLATINUM</span></h1>
         <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
@@ -85,7 +77,7 @@ export default function Home() {
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
         </section>
 
-        <section className="card rationale-box">
+        <section className="card">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
             <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
@@ -109,7 +101,7 @@ export default function Home() {
         <section className="card">
           <div className="section-title white">MARKET INDICATORS</div>
           <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color: '#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>3.14</b> <span>→</span></div>
+          <div className="m-row white">USD/ILS: <b>3.14</b> <span className="white">→</span></div>
           <div className="m-row white">Polymarket: <b>18%</b> <span className="green">↑</span></div>
         </section>
       </div>
@@ -146,26 +138,34 @@ export default function Home() {
         .title { margin: 0; font-size: 1.1rem; font-weight: 900; }
         .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
         .loading { background:#000; color:#0f0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:monospace; }
-        .green { color: #00FF00 !important; }
+        
         .white { color: #FFFFFF !important; }
+        .green { color: #00FF00 !important; }
+        
         .main-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
-        .gauges-area { display: flex; gap: 10px; background: #080808; padding: 15px; justify-content: space-around; }
+        .gauges-area { display: flex; gap: 10px; background: #080808; padding: 12px; justify-content: space-around; }
+        
         .card { border: 1px solid #333; background: #050505; padding: 12px; }
         .section-title { font-size: 0.65rem; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        
         .trigger-list { font-size: 0.75rem; line-height: 1.8; }
         .dim { color: #fff; opacity: 0.2; }
         .active { color: #00FF00; font-weight: bold; }
+
         .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
         .m-row { font-size: 0.85rem; margin-bottom: 6px; }
+        
         .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
         .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
         .FACT { background: #004400; color: #00FF00; }
         .ANALYSIS { background: #443300; color: #FFA500; }
+        
         .feed-box { height: 160px; overflow-y: auto; }
         .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
         .feed-time { color: #0f0; margin-right: 8px; }
         .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; }
+
         @media (min-width: 768px) {
           .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
           .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
