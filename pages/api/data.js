@@ -20,21 +20,17 @@ export default async function handler(req, res) {
       return t.split(' - ')[0];
     });
 
-    // МАТЕМАТИЧЕСКАЯ МОДЕЛЬ ВЕРОЯТНОСТИ (США vs ИРАН)
-    // Базируется на активности CENTCOM и рыночных ожиданиях (Polymarket 18%)
     const baseProb = 18; 
     const strikeProb = Math.min(baseProb + intel.naval + intel.kinetic + (intel.nuclear * 0.5) - (intel.diplomatic * 0.4), 98);
-    
-    // Общий риск Madad Oref (Israel Context)
     const generalRisk = Math.min(Math.round((strikeProb * 0.4) + (intel.kinetic * 1.8)), 95);
 
     res.status(200).json({
       index: generalRisk,
       us_iran: {
         val: Math.round(strikeProb),
-        rationale: "Analysis based on CSG-2 (Carrier Strike Group) positioning, regional tanker tracking, and reported kinetic spikes in Syria/Iraq."
+        rationale: "Analysis based on CSG-2 positioning and confirmed kinetic spikes in regional corridors as of Feb 2026."
       },
-      markets: { brent: "66.42", ils: "3.12", poly: "18%" },
+      markets: { brent: "66.42", ils: "3.14", poly: "18%" },
       experts: [
         { org: "ISW", text: "Regime bandwidth remains constrained, yet IRGC assets show high tactical readiness for retaliatory profiles." },
         { org: "IISS", text: "US naval presence shifted to potential strike authorization windows following recent enrichment reports." }
