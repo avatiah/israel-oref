@@ -6,11 +6,11 @@ const Gauge = ({ value, range, label, status, color }) => {
   return (
     <div className="gauge-box">
       <div className="gauge-visual">
-        {/* Functional Threat-Level Background (Green to Red) */}
-        <div className="gauge-arc-bg"></div>
-        {/* Dynamic Needle */}
+        {/* Четкие сектора угроз: Зеленый, Желтый, Красный */}
+        <div className="gauge-arc-sectors"></div>
+        {/* Стрелка индикатора */}
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        {/* Centered Status */}
+        {/* Текстовый статус */}
         <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
       <div className="gauge-range white">{range}</div>
@@ -19,44 +19,53 @@ const Gauge = ({ value, range, label, status, color }) => {
         .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .gauge-visual { 
           width: 180px; 
-          height: 100px; /* Increased height to prevent clipping */
+          height: 110px; /* Увеличено, чтобы не срезало верх */
           margin: 0 auto; 
           position: relative; 
-          overflow: hidden; 
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
         }
-        .gauge-arc-bg {
-          width: 140px; 
-          height: 140px; 
+        .gauge-arc-sectors {
+          width: 160px; 
+          height: 160px; 
           border-radius: 50%;
-          border: 12px solid transparent;
-          /* THREAT LEVEL SCALE: 0-30% Green, 30-70% Yellow, 70-100% Red */
+          /* Однотонные сектора без градиента */
           background: conic-gradient(
             from 270deg, 
-            #00FF00 0% 15%, 
-            #FFFF00 15% 35%, 
-            #FF0000 35% 50%, 
-            transparent 50%
+            #00FF00 0deg 60deg,    /* Зеленый: 0-33% */
+            #FFFF00 60deg 120deg,  /* Желтый: 33-66% */
+            #FF0000 120deg 180deg, /* Красный: 66-100% */
+            transparent 180deg
           );
-          -webkit-mask: radial-gradient(farthest-side, transparent 53px, #fff 54px);
-          mask: radial-gradient(farthest-side, transparent 53px, #fff 54px);
+          -webkit-mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
+          mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
           position: absolute; 
-          top: 15px; /* Centered top offset */
-          left: 20px;
+          top: 20px; /* Центрирование внутри увеличенного контейнера */
         }
         .gauge-needle { 
           position: absolute; 
-          bottom: 15px; 
+          bottom: 10px; 
           left: calc(50% - 1.5px); 
           width: 3px; 
-          height: 60px; 
+          height: 75px; 
           background: #FFFFFF; 
           transform-origin: bottom center; 
           transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
           z-index: 5; 
         }
-        .gauge-status { position: absolute; bottom: 15px; left: 0; right: 0; font-size: 0.9rem; font-weight: 900; text-shadow: 1px 1px 2px #000; }
-        .gauge-range { font-size: 1.1rem; font-weight: bold; margin-top: 5px; color: #fff; }
-        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.8; }
+        .gauge-status { 
+          position: absolute; 
+          bottom: 10px; 
+          left: 0; 
+          right: 0; 
+          font-size: 0.95rem; 
+          font-weight: 900; 
+          text-shadow: 2px 2px 4px #000;
+        }
+        .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: #fff; }
+        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.9; }
+        .white { color: #FFFFFF !important; }
       `}</style>
     </div>
   );
@@ -72,15 +81,16 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>CALIBRATING_V39_PRECISION...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>DEPLOYING_V40_STABLE...</div>;
 
   return (
     <div className="dashboard">
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V39 // PLATINUM</span></h1>
+        <h1 className="title">MADAD OREF <span className="v">V40 // FINAL</span></h1>
         <div className="sync white">SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
+      {/* TOP: Gauges & Tracker */}
       <div className="main-layout">
         <section className="gauges-area">
           <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
@@ -90,14 +100,15 @@ export default function Home() {
         <section className="card">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
-            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
-            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official Pentagon/State Dept warning</div>
-            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Personnel evacuation active</div>
-            <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace Closure (NOTAM)</div>
+            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups (Lincoln/Truman)</div>
+            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official State Dept Ultimatums</div>
+            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Personnel Evacuations Detected</div>
+            <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace NOTAMs</div>
           </div>
         </section>
       </div>
 
+      {/* MID: Timeline & Markets */}
       <div className="secondary-grid">
         <section className="card">
           <div className="section-title white">TIMELINE PROJECTION</div>
@@ -115,6 +126,7 @@ export default function Home() {
         </section>
       </div>
 
+      {/* EXPERT ANALYTICS */}
       <section className="card">
         <div className="section-title green">VERIFIED EXPERT ANALYTICS</div>
         {data.experts.map((e, i) => (
@@ -125,15 +137,16 @@ export default function Home() {
         ))}
       </section>
 
+      {/* RAW FEED */}
       <section className="card">
-        <div className="section-title white">RAW_SIGNAL_FEED (LIVE_DATA)</div>
+        <div className="section-title white">RAW_SIGNAL_FEED (02-FEB-2026)</div>
         {data.logs.map((l, i) => (
           <div key={i} className="log-entry white">[{i+1}] {l}</div>
         ))}
       </section>
 
       <footer className="footer white">
-        <strong>DISCLAIMER:</strong> Mathematical OSINT model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety.
+        <strong>DISCLAIMER:</strong> OSINT mathematical model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety instructions.
       </footer>
 
       <style jsx global>{`
@@ -144,6 +157,7 @@ export default function Home() {
         .v { color: #f00; font-size: 0.7rem; vertical-align: top; }
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
+        
         .main-layout, .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .gauges-area { display: flex; gap: 10px; background: #080808; border: 1px solid #222; padding: 15px; }
         .card { border: 1px solid #333; background: #050505; padding: 12px; }
