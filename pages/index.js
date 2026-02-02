@@ -10,91 +10,85 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>INITIALIZING STRATEGIC OSINT FEED...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>V31_VERTICAL_SYNC...</div>;
 
-  const Gauge = ({ value, label, color, size="180px" }) => (
-    <div style={{ flex: 1, textAlign: 'center' }}>
-      <div style={{ width: size, height: `calc(${size} / 2)`, margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ width: size, height: size, borderRadius: '50%', border: '10px solid #111', borderTopColor: color, borderRightColor: color, transform: 'rotate(45deg)', position: 'absolute' }}></div>
-        <div style={{ position: 'absolute', bottom: 0, left: '50%', width: '2px', height: '70px', background: '#fff', transformOrigin: 'bottom center', transform: `rotate(${(value / 100) * 180 - 90}deg)`, transition: 'transform 1.5s' }}></div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, fontSize: '2rem', fontWeight: 'bold', color: color }}>{value}%</div>
-      </div>
-      <div style={{ fontSize: '0.7rem', color: '#fff', marginTop: '10px', fontWeight: 'bold', letterSpacing: '1px' }}>{label}</div>
-    </div>
-  );
+  const getColor = (v) => v > 75 ? '#f00' : v > 40 ? '#f90' : '#0f0';
 
   return (
-    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '20px', fontSize: '12px' }}>
+    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '15px', maxWidth: '600px', margin: '0 auto', borderLeft: '1px solid #222', borderRight: '1px solid #222' }}>
       
-      <header style={{ borderBottom: '2px solid #f00', paddingBottom: '10px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <h1 style={{ margin: 0, color: '#fff', fontSize: '1.5rem', fontWeight: '900' }}>MADAD OREF // PRECISION OSINT</h1>
-          <div style={{ fontSize: '0.65rem', color: '#666' }}>HORIZON: 24-48 HOURS // VERSION: V30_ELITE</div>
-        </div>
-        <div style={{ textAlign: 'right', fontSize: '0.65rem', color: '#f00', fontWeight: 'bold' }}>
-          LAST_SYNC: {new Date(data.updated).toLocaleTimeString()} // LIVE_THREAT_INDEX
-        </div>
+      {/* HEADER */}
+      <header style={{ borderBottom: '2px solid #333', paddingBottom: '10px', marginBottom: '20px' }}>
+        <h1 style={{ margin: 0, color: '#fff', fontSize: '1.4rem' }}>MADAD OREF</h1>
+        <div style={{ fontSize: '0.6rem', color: '#f00', fontWeight: 'bold' }}>VERSION: V31_VERTICAL_COMMAND // LIVE</div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
+      {/* BLOCK 1: MAIN INDEX & TIMELINE */}
+      <section style={{ marginBottom: '25px', textAlign: 'center' }}>
+        <div style={{ fontSize: '3.5rem', fontWeight: '900', color: getColor(data.index), lineHeight: '1' }}>{data.index}%</div>
+        <div style={{ fontSize: '0.7rem', letterSpacing: '2px', marginBottom: '15px' }}>GENERAL ESCALATION INDEX</div>
         
-        {/* LEFT: MAIN GAUGES */}
-        <div style={{ border: '1px solid #222', padding: '20px', background: '#050505', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-          <Gauge value={data.index} label="GENERAL ESCALATION INDEX" color={data.index > 70 ? '#f00' : '#f90'} size="220px" />
-          <Gauge value={data.us_iran.val} label="U.S. STRIKE PROBABILITY" color="#f00" size="180px" />
-        </div>
-
-        {/* RIGHT: CALCULATION RATIONALE */}
-        <div style={{ border: '1px solid #222', padding: '20px', background: '#080808' }}>
-          <div style={{ color: '#f00', fontWeight: 'bold', marginBottom: '15px', borderBottom: '1px solid #300', paddingBottom: '5px' }}>&gt; CALCULATION RATIONALE</div>
-          {data.us_iran.breakdown.map((item, i) => (
-            <div key={i} style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: '#999' }}>[STAT] {item.label}:</span>
-              <span style={{ color: '#f00', fontWeight: 'bold' }}>{item.val}</span>
-            </div>
-          ))}
-          <div style={{ marginTop: '20px', padding: '10px', border: '1px dashed #333', fontSize: '0.7rem', color: '#666' }}>
-            * Current market stability (Oil/ILS) is acting as a minor suppressor to the escalation index.
+        {/* ВРЕМЕННАЯ ШКАЛА (TIMELINE) */}
+        <div style={{ border: '1px solid #222', padding: '10px', background: '#080808' }}>
+          <div style={{ fontSize: '0.6rem', color: '#666', marginBottom: '5px' }}>THREAT PROJECTION (HORIZON)</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem' }}>
+            <span>NOW: <b>{data.index}%</b></span>
+            <span style={{color: '#444'}}>|</span>
+            <span>+12H: <b>~{Math.round(data.index * 1.05)}%</b></span>
+            <span style={{color: '#444'}}>|</span>
+            <span>+48H: <b>~{Math.round(data.index * 0.9)}%</b></span>
           </div>
         </div>
+      </section>
 
-        {/* FULL WIDTH: MARKET & EXPERTS */}
-        <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px' }}>
-          
-          <div style={{ border: '1px solid #222', padding: '15px', background: '#050505' }}>
-            <div style={{ color: '#f90', fontWeight: 'bold', marginBottom: '10px' }}>&gt; MARKET INDICATORS</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div>BRENT CRUDE: <span style={{color:'#fff'}}>${data.markets.brent}</span></div>
-              <div>USD/ILS: <span style={{color:'#fff'}}>{data.markets.ils}</span></div>
-              <div>POLYMARKET (JUNE 30): <span style={{color:'#fff'}}>{data.markets.poly}</span></div>
-            </div>
+      {/* BLOCK 2: US vs IRAN (SPECIFIC) */}
+      <section style={{ border: '1px solid #300', padding: '15px', background: '#0a0000', marginBottom: '20px' }}>
+        <div style={{ color: '#f00', fontWeight: 'bold', fontSize: '0.8rem', marginBottom: '10px' }}>&gt; US_STRIKE_PROBABILITY: {data.us_iran.val}%</div>
+        {data.us_iran.breakdown.map((item, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '4px' }}>
+            <span style={{ color: '#888' }}>{item.label}</span>
+            <span style={{ color: '#f00' }}>{item.val}</span>
           </div>
+        ))}
+      </section>
 
-          <div style={{ border: '1px solid #222', padding: '15px', background: '#050505' }}>
-            <div style={{ color: '#f90', fontWeight: 'bold', marginBottom: '10px' }}>&gt; VERIFIED EXPERT ANALYTICS (ISW / IISS)</div>
-            {data.experts.map((e, i) => (
-              <div key={i} style={{ fontSize: '0.75rem', marginBottom: '8px', display: 'flex', gap: '10px' }}>
-                <span style={{ background: '#333', color: '#fff', padding: '0 4px', height: 'fit-content' }}>{e.org}</span>
-                <span style={{ color: '#bbb' }}>{e.text}</span>
-              </div>
-            ))}
+      {/* BLOCK 3: MARKET DATA */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ border: '1px solid #222', padding: '10px' }}>
+          <div style={{ fontSize: '0.55rem', color: '#666' }}>BRENT_OIL</div>
+          <div style={{ fontSize: '0.9rem', color: '#fff' }}>${data.markets.brent}</div>
+        </div>
+        <div style={{ border: '1px solid #222', padding: '10px' }}>
+          <div style={{ fontSize: '0.55rem', color: '#666' }}>USD/ILS</div>
+          <div style={{ fontSize: '0.9rem', color: '#fff' }}>{data.markets.ils}</div>
+        </div>
+      </section>
+
+      {/* BLOCK 4: EXPERTS */}
+      <section style={{ border: '1px solid #222', padding: '15px', marginBottom: '20px' }}>
+        <div style={{ color: '#f90', fontSize: '0.7rem', fontWeight: 'bold', marginBottom: '10px' }}>&gt; EXPERT_INTEL_COMMUNITY:</div>
+        {data.experts.map((e, i) => (
+          <div key={i} style={{ fontSize: '0.65rem', color: '#bbb', marginBottom: '8px', borderLeft: '2px solid #333', paddingLeft: '8px' }}>
+             <b>{e.org}:</b> {e.text}
           </div>
-        </div>
+        ))}
+      </section>
 
-        {/* LOGS */}
-        <div style={{ gridColumn: 'span 2', border: '1px solid #222', padding: '15px', background: '#050505' }}>
-          <div style={{ color: '#444', fontWeight: 'bold', marginBottom: '10px' }}>&gt; RAW_SIGNAL_FEED:</div>
-          {data.logs.map((l, i) => (
-            <div key={i} style={{ fontSize: '0.7rem', color: '#555', padding: '3px 0', borderBottom: '1px solid #111' }}>
-              [{i+1}] {l}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* BLOCK 5: EXTENDED SIGNAL LOG */}
+      <section style={{ border: '1px solid #222', padding: '15px', background: '#050505', marginBottom: '20px' }}>
+        <div style={{ color: '#444', fontSize: '0.65rem', fontWeight: 'bold', marginBottom: '10px' }}>&gt; RAW_SIGNAL_LOG (LATEST 12):</div>
+        {data.logs.map((l, i) => (
+          <div key={i} style={{ fontSize: '0.6rem', color: '#555', padding: '4px 0', borderBottom: '1px solid #111' }}>
+            [{i+1}] {l}
+          </div>
+        ))}
+      </section>
 
-      <footer style={{ marginTop: '30px', borderTop: '1px solid #222', paddingTop: '15px', fontSize: '0.65rem', color: '#444', textAlign: 'center', lineHeight: '1.5' }}>
-        <strong>DISCLAIMER:</strong> AGGREGATED OSINT DATA. FOR SITUATIONAL AWARENESS ONLY. NOT OFFICIAL MILITARY OR GOVERNMENT GUIDANCE. <br/>
-        <strong>SOURCES:</strong> ISW (INSTITUTE FOR THE STUDY OF WAR), IISS, POLYMARKET, REUTERS, BLOOMBERG (BRENT), BANK OF ISRAEL (ILS).
+      {/* FOOTER & FULL DISCLAIMER */}
+      <footer style={{ padding: '15px 0', borderTop: '1px solid #222', fontSize: '0.55rem', color: '#444', lineHeight: '1.5' }}>
+        <strong>DISCLAIMER:</strong> AGGREGATED OSINT DATA. FOR SITUATIONAL AWARENESS ONLY. NOT OFFICIAL MILITARY OR GOVERNMENT GUIDANCE. <br/><br/>
+        <strong>SOURCES:</strong> ISW (INSTITUTE FOR THE STUDY OF WAR), IISS (MILITARY BALANCE), POLYMARKET (PREDICTION MARKETS), REUTERS, BLOOMBERG (BRENT), BANK OF ISRAEL (ILS EXCHANGE).
+        <div style={{ marginTop: '10px', color: '#222' }}>SYNC_POINT: {new Date(data.updated).toISOString()}</div>
       </footer>
     </div>
   );
