@@ -6,8 +6,11 @@ const Gauge = ({ value, range, label, status, color }) => {
   return (
     <div className="gauge-box">
       <div className="gauge-visual">
+        {/* Functional Threat-Level Background (Green to Red) */}
         <div className="gauge-arc-bg"></div>
+        {/* Dynamic Needle */}
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
+        {/* Centered Status */}
         <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
       <div className="gauge-range white">{range}</div>
@@ -15,8 +18,8 @@ const Gauge = ({ value, range, label, status, color }) => {
       <style jsx>{`
         .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .gauge-visual { 
-          width: 160px; 
-          height: 85px; /* Увеличено, чтобы не срезало верх */
+          width: 180px; 
+          height: 100px; /* Increased height to prevent clipping */
           margin: 0 auto; 
           position: relative; 
           overflow: hidden; 
@@ -26,29 +29,34 @@ const Gauge = ({ value, range, label, status, color }) => {
           height: 140px; 
           border-radius: 50%;
           border: 12px solid transparent;
-          /* Полноценный градиент */
-          background: conic-gradient(from 270deg, #00FF00 0%, #FFFF00 25%, #FF0000 50%, transparent 50%);
+          /* THREAT LEVEL SCALE: 0-30% Green, 30-70% Yellow, 70-100% Red */
+          background: conic-gradient(
+            from 270deg, 
+            #00FF00 0% 15%, 
+            #FFFF00 15% 35%, 
+            #FF0000 35% 50%, 
+            transparent 50%
+          );
           -webkit-mask: radial-gradient(farthest-side, transparent 53px, #fff 54px);
           mask: radial-gradient(farthest-side, transparent 53px, #fff 54px);
           position: absolute; 
-          top: 5px; /* Отступ сверху, чтобы не резало край */
-          left: 10px;
+          top: 15px; /* Centered top offset */
+          left: 20px;
         }
         .gauge-needle { 
           position: absolute; 
-          bottom: 5px; 
+          bottom: 15px; 
           left: calc(50% - 1.5px); 
           width: 3px; 
-          height: 65px; 
-          background: #fff; 
+          height: 60px; 
+          background: #FFFFFF; 
           transform-origin: bottom center; 
-          transition: transform 1.5s ease; 
+          transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
           z-index: 5; 
         }
-        .gauge-status { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.85rem; font-weight: 900; text-shadow: 1px 1px 2px #000; }
-        .gauge-range { font-size: 1.1rem; font-weight: bold; margin-top: 10px; color: #fff; }
-        .gauge-label { font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; color: #fff; }
-        .white { color: #fff !important; }
+        .gauge-status { position: absolute; bottom: 15px; left: 0; right: 0; font-size: 0.9rem; font-weight: 900; text-shadow: 1px 1px 2px #000; }
+        .gauge-range { font-size: 1.1rem; font-weight: bold; margin-top: 5px; color: #fff; }
+        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.8; }
       `}</style>
     </div>
   );
@@ -64,34 +72,32 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>RESTORING_V38_PLATINUM...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>CALIBRATING_V39_PRECISION...</div>;
 
   return (
     <div className="dashboard">
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V38 // PLATINUM</span></h1>
-        <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
+        <h1 className="title">MADAD OREF <span className="v">V39 // PLATINUM</span></h1>
+        <div className="sync white">SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
-      {/* TOP SECTION: Gauges and Tracker */}
       <div className="main-layout">
         <section className="gauges-area">
           <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
         </section>
 
-        <section className="card rationale-box">
+        <section className="card">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
             <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
             <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official Pentagon/State Dept warning</div>
-            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Diplomatic/Personnel evacuations</div>
+            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Personnel evacuation active</div>
             <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace Closure (NOTAM)</div>
           </div>
         </section>
       </div>
 
-      {/* MID SECTION: Timeline and Markets */}
       <div className="secondary-grid">
         <section className="card">
           <div className="section-title white">TIMELINE PROJECTION</div>
@@ -104,12 +110,11 @@ export default function Home() {
         <section className="card">
           <div className="section-title white">MARKET INDICATORS</div>
           <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color:'#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>3.14</b> <span className="white">→</span></div>
+          <div className="m-row white">USD/ILS: <b>3.14</b> <span>→</span></div>
           <div className="m-row white">Polymarket: <b>18%</b> <span className="green">↑</span></div>
         </section>
       </div>
 
-      {/* EXPERT SECTION */}
       <section className="card">
         <div className="section-title green">VERIFIED EXPERT ANALYTICS</div>
         {data.experts.map((e, i) => (
@@ -120,16 +125,15 @@ export default function Home() {
         ))}
       </section>
 
-      {/* LOG SECTION */}
-      <section className="card log-card">
-        <div className="section-title white">RAW_SIGNAL_FEED (LATEST_DATA)</div>
+      <section className="card">
+        <div className="section-title white">RAW_SIGNAL_FEED (LIVE_DATA)</div>
         {data.logs.map((l, i) => (
           <div key={i} className="log-entry white">[{i+1}] {l}</div>
         ))}
       </section>
 
       <footer className="footer white">
-        <strong>OFFICIAL ANALYTICAL DISCLAIMER:</strong> This is a mathematical OSINT model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety.
+        <strong>DISCLAIMER:</strong> Mathematical OSINT model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety.
       </footer>
 
       <style jsx global>{`
@@ -140,28 +144,21 @@ export default function Home() {
         .v { color: #f00; font-size: 0.7rem; vertical-align: top; }
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
-        
-        .main-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+        .main-layout, .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .gauges-area { display: flex; gap: 10px; background: #080808; border: 1px solid #222; padding: 15px; }
-        
-        .card { border: 1px solid #333; background: #050505; padding: 12px; margin-bottom: 12px; }
+        .card { border: 1px solid #333; background: #050505; padding: 12px; }
         .section-title { font-size: 0.65rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
         .trigger-list { font-size: 0.75rem; line-height: 1.8; }
-        .dim { color: #fff; opacity: 0.3; }
+        .dim { color: #fff; opacity: 0.2; }
         .active { color: #00FF00; font-weight: bold; }
-
-        .secondary-grid { display: flex; flex-direction: column; gap: 15px; }
         .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
         .m-row { font-size: 0.8rem; margin-bottom: 6px; }
-        
         .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
         .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
         .FACT { background: #004400; color: #00FF00; }
         .ANALYSIS { background: #443300; color: #FFA500; }
-        
         .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
-        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; line-height: 1.5; }
-
+        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; }
         @media (min-width: 768px) {
           .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
           .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
