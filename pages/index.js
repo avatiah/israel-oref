@@ -6,45 +6,30 @@ const Gauge = ({ value, range, label, status, color }) => {
   return (
     <div className="gauge-box">
       <div className="gauge-visual">
-        {/* Однотонные сектора: Зеленый, Желтый, Красный */}
-        <div className="gauge-arc"></div>
+        {/* Чистый полукруг с тремя зонами */}
+        <svg viewBox="0 0 100 55" className="gauge-svg">
+          <path d="M10,50 A40,40 0 0,1 36.6,15.4" fill="none" stroke="#00FF00" strokeWidth="12" />
+          <path d="M36.6,15.4 A40,40 0 0,1 63.4,15.4" fill="none" stroke="#FFFF00" strokeWidth="12" />
+          <path d="M63.4,15.4 A40,40 0 0,1 90,50" fill="none" stroke="#FF0000" strokeWidth="12" />
+        </svg>
         {/* Стрелка */}
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        {/* Текст статуса */}
+        {/* Текст внутри */}
         <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
       <div className="gauge-range white">{range}</div>
       <div className="gauge-label white">{label}</div>
       <style jsx>{`
         .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .gauge-visual { 
-          width: 180px; 
-          height: 100px; /* Исправленная высота: купол не срезается */
-          margin: 0 auto; 
-          position: relative; 
-          overflow: hidden; 
-        }
-        .gauge-arc {
-          width: 160px; height: 160px; border-radius: 50%;
-          border: 12px solid transparent;
-          /* Четкие границы секторов для наглядности угроз */
-          background: conic-gradient(from 270deg, 
-            #00FF00 0deg 60deg, 
-            #FFFF00 60deg 120deg, 
-            #FF0000 120deg 180deg, 
-            transparent 180deg
-          );
-          -webkit-mask: radial-gradient(farthest-side, transparent 65px, #fff 66px);
-          mask: radial-gradient(farthest-side, transparent 65px, #fff 66px);
-          position: absolute; top: 10px; left: 10px;
-        }
+        .gauge-visual { width: 180px; height: 100px; margin: 0 auto; position: relative; }
+        .gauge-svg { width: 100%; height: auto; display: block; }
         .gauge-needle { 
-          position: absolute; bottom: 10px; left: calc(50% - 1.5px); 
-          width: 3px; height: 75px; background: #fff; 
+          position: absolute; bottom: 12px; left: calc(50% - 1.5px); 
+          width: 3px; height: 65px; background: #fff; 
           transform-origin: bottom center; transition: transform 1.5s ease; z-index: 5; 
         }
         .gauge-status { 
-          position: absolute; bottom: 10px; left: 0; right: 0; 
+          position: absolute; bottom: 12px; left: 0; right: 0; 
           font-size: 0.95rem; font-weight: 900; text-shadow: 2px 2px 4px #000; 
         }
         .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: #fff; }
@@ -64,17 +49,17 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>RESTORING_V44_STABLE...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>SYSTEM_RECOVERY_V45...</div>;
 
   return (
     <div className="dashboard">
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V44 // PLATINUM</span></h1>
-        <div className="sync white">SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
+        <h1 className="title">MADAD OREF <span className="v">V45 // PLATINUM</span></h1>
+        <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
       <div className="main-layout">
-        <section className="gauges-area">
+        <section className="gauges-area card">
           <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
         </section>
