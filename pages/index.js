@@ -10,7 +10,7 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace', fontWeight:'bold'}}>INITIALIZING_V38_PLATINUM_OSINT...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace', fontWeight:'bold'}}>RESYNCING_V38_PLATINUM...</div>;
 
   const Gauge = ({ value, range, label, status, color }) => (
     <div className="gauge-box">
@@ -31,7 +31,8 @@ export default function Home() {
         <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
-      <div className="top-section">
+      {/* Основная сетка: на мобильных превращается в одну колонку без дырок */}
+      <div className="main-layout">
         <section className="gauges-area">
           <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
@@ -40,23 +41,32 @@ export default function Home() {
         <section className="card rationale-box">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
-            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups (Lincoln/Truman) in position</div>
-            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Final official ultimatums (State Dept)</div>
-            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Diplomatic/Personnel evacuation active</div>
-            <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace Closures (NOTAM)</div>
+            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'inactive'}>
+               [{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position
+            </div>
+            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'inactive'}>
+               [{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Final official ultimatums
+            </div>
+            <div className={data.us_iran.triggers.evacuations ? 'active' : 'inactive'}>
+               [{data.us_iran.triggers.evacuations ? 'X' : ' '}] Diplomatic/Personnel evacuation
+            </div>
+            <div className={data.us_iran.triggers.airspace ? 'active' : 'inactive'}>
+               [{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional Airspace Closure
+            </div>
           </div>
         </section>
       </div>
 
-      <div className="mid-grid">
+      <div className="secondary-grid">
         <section className="card">
           <div className="section-title white">TIMELINE PROJECTION</div>
           <div className="timeline white">
-            <div>NOW: <b>{data.israel.val}%</b></div>
-            <div>+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
-            <div>+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
+            <div className="t-item">NOW: <b>{data.israel.val}%</b></div>
+            <div className="t-item">+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
+            <div className="t-item">+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
           </div>
         </section>
+
         <section className="card">
           <div className="section-title white">MARKET INDICATORS</div>
           <div className="m-row white">Brent Crude: <b>$66.42</b> <span className="red">↓</span></div>
@@ -83,47 +93,57 @@ export default function Home() {
       </section>
 
       <footer className="footer white">
-        <strong>DISCLAIMER:</strong> This is an OSINT mathematical model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety. All data is verified against current reports.
+        <strong>DISCLAIMER:</strong> OSINT mathematical model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety.
       </footer>
 
       <style jsx global>{`
         body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 10px; }
-        .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 20px; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #FF0000; margin-bottom: 20px; padding-bottom: 10px; }
-        .title { margin: 0; font-size: 1.3rem; font-weight: 900; }
-        .v { color: #f00; font-size: 0.8rem; vertical-align: top; }
+        .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 15px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF0000; margin-bottom: 15px; padding-bottom: 8px; }
+        .title { margin: 0; font-size: 1.1rem; font-weight: 900; color: #fff; }
+        .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
         .red { color: #FF0000 !important; }
-        
-        .top-section { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; margin-bottom: 20px; }
-        .gauges-area { display: flex; gap: 15px; background: #080808; border: 1px solid #222; padding: 15px; }
-        .gauge-box { flex: 1; text-align: center; }
-        .gauge-visual { width: 140px; height: 70px; margin: 0 auto; position: relative; overflow: hidden; }
-        .gauge-arc { width: 140px; height: 140px; border-radius: 50%; border: 12px solid #111; transform: rotate(45deg); position: absolute; }
-        .gauge-needle { position: absolute; bottom: 0; left: 50%; width: 2px; height: 55px; background: #fff; transform-origin: bottom center; transition: transform 1.5s ease-out; }
-        .gauge-status { position: absolute; bottom: 0; left: 0; right: 0; font-size: 0.9rem; font-weight: 900; }
-        .gauge-range { font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
-        .gauge-label { font-size: 0.6rem; text-transform: uppercase; margin-top: 5px; }
 
-        .card { border: 1px solid #444; background: #050505; padding: 15px; margin-bottom: 15px; }
-        .section-title { font-size: 0.7rem; font-weight: 900; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .trigger-list { font-size: 0.8rem; line-height: 2; }
-        .dim { color: #555; }
+        /* ИСПРАВЛЕНИЕ ПУСТОГО МЕСТА: Flexbox для мобильных */
+        .main-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+        
+        .gauges-area { display: flex; gap: 10px; background: #080808; border: 1px solid #222; padding: 12px; justify-content: space-around; }
+        .gauge-box { text-align: center; }
+        .gauge-visual { width: 120px; height: 60px; margin: 0 auto; position: relative; overflow: hidden; }
+        .gauge-arc { width: 120px; height: 120px; border-radius: 50%; border: 10px solid #111; transform: rotate(45deg); position: absolute; }
+        .gauge-needle { position: absolute; bottom: 0; left: 50%; width: 2px; height: 45px; background: #fff; transform-origin: bottom center; transition: transform 1.5s ease-out; }
+        .gauge-status { position: absolute; bottom: 0; left: 0; right: 0; font-size: 0.8rem; font-weight: 900; }
+        .gauge-range { font-size: 1rem; font-weight: bold; margin-top: 8px; }
+        .gauge-label { font-size: 0.55rem; text-transform: uppercase; margin-top: 3px; }
+
+        .secondary-grid { display: flex; flex-direction: column; gap: 15px; }
+
+        .card { border: 1px solid #333; background: #050505; padding: 12px; }
+        .section-title { font-size: 0.65rem; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        
+        .trigger-list { font-size: 0.75rem; line-height: 1.8; }
+        .inactive { color: #FFFFFF; opacity: 0.3; } /* Оставил белым, но приглушенным */
         .active { color: #00FF00; font-weight: bold; }
 
-        .mid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .timeline { display: flex; justify-content: space-between; font-size: 0.9rem; }
-        .m-row { font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #111; }
+        .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
+        .m-row { font-size: 0.85rem; margin-bottom: 6px; }
         
-        .expert-item { font-size: 0.8rem; margin-bottom: 12px; border-left: 4px solid #00FF00; padding-left: 12px; }
-        .tag { font-size: 0.6rem; padding: 2px 6px; margin-right: 10px; border-radius: 2px; font-weight: bold; }
+        .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
+        .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
         .FACT { background: #004400; color: #00FF00; }
         .ANALYSIS { background: #443300; color: #FFA500; }
-        .SIGNAL { background: #000044; color: #4444FF; }
         
-        .log-entry { font-size: 0.7rem; padding: 6px 0; border-bottom: 1px solid #111; }
-        .footer { font-size: 0.65rem; border-top: 1px solid #333; margin-top: 25px; padding: 20px 0; line-height: 1.6; }
+        .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; line-height: 1.2; }
+        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; line-height: 1.4; }
+
+        /* АДАПТИВ ДЛЯ ДЕСКТОПА: Возвращаем сетку, если экран широкий */
+        @media (min-width: 768px) {
+          .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
+          .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
+          .title { font-size: 1.3rem; }
+        }
       `}</style>
     </div>
   );
