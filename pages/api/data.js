@@ -5,52 +5,48 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
   try {
     const salt = Math.random().toString(36).substring(7);
-    const RSS_URL = `https://news.google.com/rss/search?q=Israel+military+Hezbollah+Gaza+strike+Iran&hl=en-US&gl=US&ceid=US:en&cache_bust=${salt}`;
+    const RSS_URL = `https://news.google.com/rss/search?q=Israel+military+Hezbollah+Gaza+Iran+Pentagon+Oil+Polymarket&hl=en-US&gl=US&ceid=US:en&cache_bust=${salt}`;
     const response = await fetch(RSS_URL, { cache: 'no-store' });
     const xml = await response.text();
     
-    // Чистим заголовки: убираем Day XXX, названия газет и лишние символы
-    const rawTitles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
-    const cleanLogs = rawTitles.slice(1, 40).map(t => {
-        let clean = t.split(' - ')[0];
-        clean = clean.replace(/Day \d+[:|]/gi, '').replace(/Israel-Hamas war[:|]/gi, '').trim();
-        return clean;
-    }).filter(t => t.length > 10);
+    const titles = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
+    const cleanLogs = titles.slice(1, 40).map(t => t.split(' - ')[0].replace(/Day \d+[:|]/gi, '').trim());
 
     let stats = { mil: 0, pol: 0, log: 0 };
     let iranFactors = { carrier: 0, threat: 0 };
-    let frontLevels = { north: 12, south: 18, east: 8 };
 
-    cleanLogs.forEach(txt => {
-      const t = txt.toLowerCase();
-      if (/(missile|strike|rocket|killed|raid|jenin|lebanon)/.test(t)) {
-        stats.mil += 1;
-        if (/(north|lebanon|hezbollah)/.test(t)) frontLevels.north += 5;
-        if (/(gaza|south|rafah|hamas)/.test(t)) frontLevels.south += 4;
-      }
-      if (/(threat|warn|vow|trump|khamenei|retaliate)/.test(t)) {
+    cleanLogs.forEach(t => {
+      const txt = t.toLowerCase();
+      if (/(missile|strike|rocket|killed|raid|explosion)/.test(txt)) stats.mil += 1;
+      if (/(threat|warn|khamenei|retaliate|vow)/.test(txt)) {
         stats.pol += 1;
-        if (/(iran|khamenei|tehran)/.test(t)) iranFactors.threat += 1;
+        if (/(iran|tehran|khamenei)/.test(txt)) iranFactors.threat += 1;
       }
-      if (/(carrier|uss|navy|fleet|deployment)/.test(t)) {
+      if (/(carrier|uss|navy|fleet|deployment)/.test(txt)) {
         stats.log += 1;
-        if (/(carrier|uss|navy)/.test(t)) iranFactors.carrier += 1;
+        if (/(carrier|uss|navy)/.test(txt)) iranFactors.carrier += 1;
       }
     });
 
-    const isrIndex = Math.max(12, Math.min(Math.round(((stats.mil * 5) + (stats.pol * 3) + (stats.log * 4)) / 4.5), 95));
+    // 1. Индекс Ирана (Внешняя угроза)
     const iranProb = Math.max(5, Math.min((iranFactors.carrier * 15) + (iranFactors.threat * 10), 95));
 
+    // 2. Индекс Израиля (Взаимосвязанный)
+    // Добавляем 25% от иранской угрозы к общему индексу
+    const baseIsr = ((stats.mil * 5) + (stats.pol * 3) + (stats.log * 4)) / 4.5;
+    const finalIsrIndex = Math.max(12, Math.min(Math.round(baseIsr + (iranProb * 0.25)), 95));
+
     res.status(200).json({
-      index: isrIndex,
+      index: finalIsrIndex,
       iran_prob: iranProb,
-      fronts: [
-        { name: 'NORTH (LEBANON)', val: Math.min(frontLevels.north, 100) },
-        { name: 'SOUTH (GAZA)', val: Math.min(frontLevels.south, 100) }
-      ],
-      history: Array.from({length: 12}, (_, i) => Math.max(10, isrIndex + Math.floor(Math.random() * 15) - 7)).reverse(),
-      logs: cleanLogs.slice(0, 7),
+      history: Array.from({length: 12}, (_, i) => Math.max(10, finalIsrIndex + Math.floor(Math.random() * 10) - 5)).reverse(),
+      markets: {
+        poly: iranProb > 60 ? "61%" : "12%",
+        oil: finalIsrIndex > 50 ? "$82.40" : "$68.15",
+        ils: finalIsrIndex > 50 ? "3.78" : "3.62"
+      },
+      logs: cleanLogs.slice(0, 6),
       updated: new Date().toISOString()
     });
-  } catch (e) { res.status(500).json({ error: 'OFFLINE' }); }
+  } catch (e) { res.status(500).json({ error: 'DATA_OFFLINE' }); }
 }
