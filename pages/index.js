@@ -21,7 +21,6 @@ const Gauge = ({ value, range, label, status, color }) => {
         .gauge-arc-sectors {
           width: 160px; height: 160px; border-radius: 50%;
           border: 12px solid transparent;
-          /* Четкие цветовые зоны без радуги */
           background: conic-gradient(from 270deg, #00FF00 0deg 60deg, #FFFF00 60deg 120deg, #FF0000 120deg 180deg, transparent 180deg);
           -webkit-mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
           mask: radial-gradient(farthest-side, transparent 64px, #fff 65px);
@@ -50,7 +49,7 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div className="loading">RESYNCING_V41_PLATINUM...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>RESYNCING_V41_PLATINUM...</div>;
 
   return (
     <div className="dashboard">
@@ -65,7 +64,7 @@ export default function Home() {
           <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
         </section>
 
-        <section className="card rationale-box">
+        <section className="card">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
             <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
@@ -125,35 +124,26 @@ export default function Home() {
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF0000; margin-bottom: 15px; padding-bottom: 8px; }
         .title { margin: 0; font-size: 1.1rem; font-weight: 900; }
         .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
-        .loading { background:#000; color:#0f0; height:100vh; display:flex; align-items:center; justifyContent:center; font-family:monospace; }
-        
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
-        
         .main-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .gauges-area { display: flex; gap: 10px; background: #080808; padding: 12px; justify-content: space-around; }
-        
         .card { border: 1px solid #333; background: #050505; padding: 12px; }
         .section-title { font-size: 0.65rem; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        
         .trigger-list { font-size: 0.75rem; line-height: 1.8; }
         .dim { color: #fff; opacity: 0.2; }
         .active { color: #00FF00; font-weight: bold; }
-
         .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
         .m-row { font-size: 0.85rem; margin-bottom: 6px; }
-        
         .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
         .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
         .FACT { background: #004400; color: #00FF00; }
         .ANALYSIS { background: #443300; color: #FFA500; }
-        
-        .feed-box { height: 160px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 #000; }
+        .feed-box { height: 160px; overflow-y: auto; }
         .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
         .feed-time { color: #0f0; margin-right: 8px; }
         .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; }
-
         @media (min-width: 768px) {
           .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
           .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
