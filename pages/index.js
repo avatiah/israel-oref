@@ -10,78 +10,65 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>BOOTING STRATCOM V25...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>STRATCOM V25: SYNCING...</div>;
 
-  const color = data.index > 60 ? '#f00' : data.index > 35 ? '#f90' : '#0f0';
+  const color = data.index > 65 ? '#f00' : data.index > 35 ? '#f90' : '#0f0';
 
   return (
-    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '15px', fontSize: '11px' }}>
+    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '15px', fontSize: '12px' }}>
       
-      {/* HEADER */}
-      <header style={{ borderBottom: `2px solid ${color}`, paddingBottom: '10px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+      <header style={{ borderBottom: `2px solid ${color}`, paddingBottom: '10px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#fff', fontSize: '1.5rem', letterSpacing: '2px' }}>MADAD OREF</h2>
-          <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>02 FEB 2026 // OPERATIONAL_STATUS: {data.index > 40 ? 'CRITICAL' : 'STABLE'}</div>
+          <h2 style={{ margin: 0, color: '#fff', fontSize: '1.4rem' }}>MADAD OREF</h2>
+          <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>02 FEB 2026 // STATUS: {data.index > 40 ? 'ELEVATED' : 'OPERATIONAL'}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ color: color, fontSize: '1.1rem' }}>THREAT: {data.index}%</div>
-          <div style={{ fontSize: '0.55rem' }}>SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
+          <div style={{ color: color, fontSize: '1.2rem' }}>{data.index}%</div>
+          <div style={{ fontSize: '0.6rem' }}>LIVE ANALYTICS</div>
         </div>
       </header>
 
       <div className="grid">
-        {/* RADAR */}
         <div className="card center">
           <div className="radar" style={{borderColor: color}}>
             <div className="sweep" style={{background: `conic-gradient(from 0deg, ${color}33 0deg, transparent 90deg)`}}></div>
             <div className="val" style={{color: color}}>{data.index}%</div>
           </div>
-          <div style={{marginTop: '15px', fontSize: '0.7rem'}}>METHODOLOGY: BAYESIAN RISK MODEL</div>
+          <div style={{marginTop: '15px'}}>METHODOLOGY: BAYESIAN RISK ANALYTICS</div>
         </div>
 
-        {/* U.S. VS IRAN STRIKE INDEX */}
         <div className="card">
-          <div style={{color: '#f00', fontWeight: 'bold', marginBottom: '10px'}}>&gt; US STRIKE PROBABILITY // {data.us_iran.val}%</div>
-          <div style={{fontSize: '0.65rem', marginBottom: '15px', borderLeft: '2px solid #300', paddingLeft: '8px', color: '#999'}}>
-            {data.us_iran.rationale}
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem'}}>
+          <div style={{color: '#f00', fontWeight: 'bold', marginBottom: '10px'}}>&gt; US STRIKE ON IRAN // {data.us_iran.val}%</div>
+          <p style={{fontSize: '0.65rem', color: '#888', borderLeft: '2px solid #300', paddingLeft: '8px'}}>{data.us_iran.rationale}</p>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '10px'}}>
             <span>POLYMARKET (JUNE 30):</span>
-            <span style={{color: '#fff'}}>{data.markets.poly_long}</span>
+            <span style={{color: '#fff'}}>{data.markets.poly_june}</span>
           </div>
         </div>
 
-        {/* MARKET INTELLIGENCE */}
-        <div className="card full market-bar">
-          <div className="m-box">BRENT OIL: <b style={{color:'#fff'}}>{data.markets.oil}</b></div>
-          <div className="m-box">USD/ILS: <b style={{color:'#fff'}}>{data.markets.ils}</b></div>
-          <div className="m-box">SENTIMENT: <b style={{color: color}}>{data.index > 40 ? 'STRESS' : 'CALM'}</b></div>
+        <div className="card full market-line">
+          <div>BRENT OIL: <b style={{color:'#fff'}}>{data.markets.brent}</b></div>
+          <div>USD/ILS: <b style={{color:'#fff'}}>{data.markets.ils}</b></div>
+          <div>SENTIMENT: <b style={{color: color}}>{data.index > 40 ? 'RISK_OFF' : 'RISK_ON'}</b></div>
         </div>
 
-        {/* OSINT PROFESSIONAL BRIEF */}
-        <div className="card full" style={{borderColor: '#444'}}>
-          <div style={{fontSize: '0.7rem', color: '#f90', marginBottom: '10px'}}>&gt; INTEL_COMMUNITY_BRIEF (ISW / IISS)</div>
-          {data.osint_brief.map((b, i) => (
-            <div key={i} style={{marginBottom: '8px', fontSize: '0.65rem'}}>
-              <span style={{color: '#fff'}}>[{b.org}]</span> {b.text}
-            </div>
+        <div className="card full">
+          <div style={{fontSize: '0.7rem', color: '#f90', marginBottom: '10px'}}>&gt; PROFESSIONAL OSINT BRIEF (ISW / IISS)</div>
+          {data.osint_experts.map((e, i) => (
+            <div key={i} style={{fontSize: '0.65rem', marginBottom: '6px'}}><span style={{color: '#fff'}}>[{e.org}]</span> {e.text}</div>
           ))}
         </div>
 
-        {/* LOGS */}
         <div className="card full">
-          <div style={{fontSize: '0.7rem', color: color, marginBottom: '10px'}}>&gt; RAW_SIGNAL_FEED:</div>
+          <div style={{fontSize: '0.7rem', color: color, marginBottom: '10px'}}>&gt; SIGNAL_LOG:</div>
           {data.logs.map((l, i) => (
-            <div key={i} style={{fontSize: '0.65rem', padding: '4px 0', borderBottom: '1px solid #111', color: '#888'}}>
-              <span style={{color: color, marginRight: '10px'}}>[SIGNAL_{i+1}]</span> {l}
-            </div>
+            <div key={i} style={{fontSize: '0.65rem', padding: '4px 0', borderBottom: '1px solid #111', color: '#777'}}>[{i+1}] {l}</div>
           ))}
         </div>
       </div>
 
       <footer style={{ marginTop: '20px', borderTop: '1px solid #222', paddingTop: '10px', fontSize: '0.55rem', color: '#444' }}>
-        <strong>DISCLAIMER:</strong> This tool aggregates open-source intelligence and market data for situational awareness. It is NOT official military guidance. <br/>
-        <strong>SOURCES:</strong> ISW, IISS, Polymarket, Google News Financial API, CSIS Reports.
+        <strong>DISCLAIMER:</strong> AGGREGATED OSINT DATA. NOT OFFICIAL GUIDANCE. SOURCES: ISW, IISS, POLYMARKET.
       </footer>
 
       <style jsx>{`
@@ -89,13 +76,12 @@ export default function Home() {
         .card { border: 1px solid #222; padding: 15px; background: #050505; }
         .full { grid-column: span 2; }
         .center { text-align: center; }
-        .market-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .m-box { border-left: 2px solid #333; padding-left: 10px; font-size: 0.65rem; }
-        .radar { width: 110px; height: 110px; border: 2px solid #030; border-radius: 50%; margin: 0 auto; position: relative; overflow: hidden; }
+        .market-line { display: flex; justify-content: space-around; font-size: 0.7rem; }
+        .radar { width: 100px; height: 100px; border: 2px solid #030; border-radius: 50%; margin: 0 auto; position: relative; overflow: hidden; }
         .sweep { position: absolute; width: 100%; height: 100%; animation: rot 4s linear infinite; }
-        .val { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.8rem; font-weight: bold; }
+        .val { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.6rem; font-weight: bold; }
         @keyframes rot { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .full { grid-column: span 1; } .market-bar { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .full { grid-column: span 1; } .market-line { flex-direction: column; gap: 10px; } }
       `}</style>
     </div>
   );
