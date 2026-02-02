@@ -10,97 +10,99 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>SYNCING STRATCOM V19...</div>;
+  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>RESTORING ANALYTICAL CORES...</div>;
 
-  const color = data.index > 60 ? '#f00' : data.index > 35 ? '#f90' : '#0f0';
+  const color = data.index > 70 ? '#f00' : data.index > 40 ? '#f90' : '#0f0';
 
   return (
-    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '15px' }}>
+    <div style={{ background: '#000', color: '#ccc', minHeight: '100vh', fontFamily: 'monospace', padding: '20px', fontSize: '12px' }}>
       
       {/* HEADER */}
-      <header style={{ borderBottom: `2px solid ${color}`, paddingBottom: '10px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `2px solid ${color}`, paddingBottom: '10px', marginBottom: '25px' }}>
         <div>
-          <h1 style={{ margin: 0, color: '#fff', fontSize: '1.4rem', letterSpacing: '2px' }}>MADAD OREF</h1>
-          <div style={{ fontSize: '0.6rem', opacity: 0.6 }}>ISRAEL STRATEGIC THREAT MONITOR</div>
+          <h1 style={{ margin: 0, color: '#fff', fontSize: '1.6rem', letterSpacing: '3px' }}>MADAD OREF</h1>
+          <div style={{ opacity: 0.6 }}>ISRAEL STRATEGIC INTELLIGENCE TERMINAL</div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: '0.6rem' }}>
-          LIVE // {new Date(data.updated).toLocaleTimeString()}
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ color: color }}>[ STATUS: {data.index > 40 ? 'CRITICAL' : 'OPERATIONAL'} ]</div>
+          <div style={{ fontSize: '0.6rem' }}>SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
         </div>
-      </header>
+      </div>
 
-      <div className="grid">
-        {/* RADAR & TREND */}
-        <div className="card center">
-          <div className="radar" style={{borderColor: color}}>
-            <div className="sweep" style={{background: `conic-gradient(from 0deg, ${color}44 0deg, transparent 90deg)`}}></div>
-            <div className="val" style={{color: color}}>{data.index}%</div>
+      <div className="layout">
+        
+        {/* BLOCK 1: DYNAMIC RADAR */}
+        <div className="card panel-center">
+          <div className="radar-box" style={{borderColor: color}}>
+            <div className="radar-sweep"></div>
+            <div className="radar-grid"></div>
+            <div className="radar-value" style={{color: color}}>{data.index}%</div>
           </div>
-          <div style={{marginTop: '15px', color: color, fontSize: '0.8rem'}}>STATUS: {data.index > 35 ? 'ELEVATED' : 'STABILIZED'}</div>
-          
-          <div className="chart">
-            {data.history.map((h, i) => (
-              <div key={i} style={{flex: 1, background: color, height: `${h}%`, opacity: 0.2 + (i*0.06)}}></div>
+          <div style={{marginTop: '20px'}}>
+            <div style={{fontSize: '0.7rem', color: color, marginBottom: '10px'}}>72H THREAT TREND</div>
+            <div style={{display: 'flex', alignItems: 'flex-end', height: '40px', gap: '3px'}}>
+              {data.history.map((h, i) => (
+                <div key={i} style={{flex: 1, background: color, height: `${h}%`, opacity: 0.1 + (i*0.06)}}></div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* BLOCK 2: SECTOR ANALYSIS & MARKETS */}
+        <div className="card">
+          <div style={{color: '#f00', fontWeight: 'bold', marginBottom: '15px'}}>&gt; EXTERNAL: U.S. VS IRAN // {data.iran_prob}%</div>
+          <div className="market-row">
+            <div>POLYMARKET: <span style={{color: '#fff'}}>{data.markets.poly}</span></div>
+            <div>BRENT OIL: <span style={{color: '#fff'}}>{data.markets.oil}</span></div>
+            <div>USD/ILS: <span style={{color: '#fff'}}>{data.markets.ils}</span></div>
+          </div>
+
+          <div style={{marginTop: '25px', borderTop: '1px solid #222', paddingTop: '15px'}}>
+            <div style={{fontSize: '0.7rem', color: color, marginBottom: '10px'}}>REGIONAL FRONT STATUS:</div>
+            {data.sectors.map((s, i) => (
+              <div key={i} style={{marginBottom: '10px'}}>
+                <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.6rem'}}><span>{s.n}</span><span>{s.v}%</span></div>
+                <div style={{height:'2px', background:'#111', marginTop: '4px'}}><div style={{height:'100%', background:color, width:`${s.v}%`}}></div></div>
+              </div>
             ))}
           </div>
-          <div style={{fontSize: '0.5rem', opacity: 0.5}}>72H INDEX DYNAMICS</div>
         </div>
 
-        {/* U.S. vs IRAN */}
-        <div className="card" style={{borderLeft: '4px solid #f00'}}>
-          <div style={{color: '#f00', fontSize: '0.7rem', fontWeight: 'bold', marginBottom: '10px'}}>EXTERNAL: U.S. VS IRAN</div>
-          <div style={{fontSize: '2rem', color: '#fff'}}>{data.iran_prob}%</div>
-          <div style={{fontSize: '0.6rem', opacity: 0.7, marginBottom: '15px'}}>STRIKE PROBABILITY (REGIONAL)</div>
-          <div style={{fontSize: '0.6rem', color: '#666', lineHeight: '1.4'}}>
-            * Logic: Correlates naval carrier strike groups (CSG) presence with Tehran's escalatory rhetoric.
-          </div>
-        </div>
-
-        {/* MARKET INDICATORS */}
+        {/* BLOCK 3: LATEST OSINT LOGS */}
         <div className="card full">
-          <div style={{fontSize: '0.7rem', color: '#ff0', marginBottom: '15px'}}>&gt; MARKET_INTELLIGENCE</div>
-          <div className="market-grid">
-            <div className="m-item"><span>POLYMARKET</span><br/><span style={{color: '#fff'}}>{data.markets.poly}</span></div>
-            <div className="m-item"><span>BRENT OIL</span><br/><span style={{color: '#fff'}}>{data.markets.oil}</span></div>
-            <div className="m-item"><span>USD/ILS</span><br/><span style={{color: '#fff'}}>{data.markets.ils}</span></div>
-            <div className="m-item"><span>SENTIMENT</span><br/><span style={{color: '#fff'}}>{data.index > 40 ? 'RISK_OFF' : 'NEUTRAL'}</span></div>
-          </div>
-        </div>
-
-        {/* LOGS */}
-        <div className="card full">
-          <div style={{fontSize: '0.7rem', color: color, marginBottom: '10px'}}>&gt; RECENT_OSINT_SIGNALS</div>
+          <div style={{fontSize: '0.7rem', color: color, marginBottom: '12px'}}>&gt; VERIFIED_OSINT_FEED</div>
           {data.logs.map((l, i) => (
-            <div key={i} style={{fontSize: '0.65rem', marginBottom: '8px', borderLeft: `2px solid ${color}`, paddingLeft: '8px', color: '#999'}}>
-              {l}
+            <div key={i} style={{fontSize: '0.7rem', padding: '6px 0', borderBottom: '1px solid #111', display: 'flex'}}>
+              <span style={{color: color, marginRight: '10px'}}>[SIGNAL_{i+1}]</span>
+              <span style={{color: '#999'}}>{l}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <footer style={{marginTop: '30px', fontSize: '0.55rem', color: '#444', borderTop: '1px solid #222', paddingTop: '15px'}}>
+      <footer style={{ marginTop: '30px', borderTop: '1px solid #222', paddingTop: '15px', fontSize: '0.6rem', color: '#555' }}>
         <strong>SOURCES (live feeds):</strong><br/>
         • News aggregation (Google News clusters) | • Prediction markets (Polymarket) | 
         • Commodities (Brent Oil - market proxy) | • FX (USD/ILS - stress indicator)
-        <div style={{marginTop: '10px'}}>Disclaimer: Not for tactical decisions. Consult official sources.</div>
       </footer>
 
       <style jsx>{`
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { border: 1px solid #222; padding: 15px; background: #050505; }
-        .center { text-align: center; }
+        .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { border: 1px solid #222; padding: 20px; background: #050505; position: relative; }
+        .panel-center { text-align: center; }
         .full { grid-column: span 2; }
-        .market-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .m-item { font-size: 0.6rem; border-left: 1px solid #333; padding-left: 8px; }
-        .radar { width: 140px; height: 140px; border: 2px solid #030; border-radius: 50%; margin: 0 auto; position: relative; overflow: hidden; }
-        .sweep { position: absolute; width: 100%; height: 100%; animation: r 4s linear infinite; }
-        .val { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; font-weight: bold; }
-        .chart { display: flex; align-items: flex-end; height: 40px; gap: 2px; margin-top: 20px; }
+        .market-row { display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.7rem; }
+        
+        .radar-box { width: 150px; height: 150px; border: 2px solid #030; border-radius: 50%; margin: 0 auto; position: relative; overflow: hidden; background: #000; }
+        .radar-sweep { position: absolute; width: 100%; height: 100%; background: conic-gradient(from 0deg, rgba(0,255,0,0.15) 0deg, transparent 90deg); animation: r 4s linear infinite; }
+        .radar-grid { position: absolute; top:0; left:0; width:100%; height:100%; background-image: radial-gradient(circle, transparent 30%, rgba(0,255,0,0.05) 31%, transparent 32%, transparent 60%, rgba(0,255,0,0.05) 61%); }
+        .radar-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; font-weight: bold; }
+        
         @keyframes r { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        @media (max-width: 600px) {
-          .grid { grid-template-columns: 1fr; }
+        @media (max-width: 700px) {
+          .layout { grid-template-columns: 1fr; }
           .full { grid-column: span 1; }
-          .market-grid { grid-template-columns: 1fr 1fr; }
         }
       `}</style>
     </div>
