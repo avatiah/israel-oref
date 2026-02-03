@@ -2,19 +2,15 @@ import { useState, useEffect } from 'react';
 
 const Gauge = ({ value, range, label, status, color }) => {
   const rotation = (value / 100) * 180 - 90;
-
   return (
     <div className="gauge-box">
       <div className="gauge-visual">
-        {/* Чистый полукруг с тремя зонами */}
         <svg viewBox="0 0 100 55" className="gauge-svg">
           <path d="M10,50 A40,40 0 0,1 36.6,15.4" fill="none" stroke="#00FF00" strokeWidth="12" />
           <path d="M36.6,15.4 A40,40 0 0,1 63.4,15.4" fill="none" stroke="#FFFF00" strokeWidth="12" />
           <path d="M63.4,15.4 A40,40 0 0,1 90,50" fill="none" stroke="#FF0000" strokeWidth="12" />
         </svg>
-        {/* Стрелка */}
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        {/* Текст внутри */}
         <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
       <div className="gauge-range white">{range}</div>
@@ -49,22 +45,23 @@ export default function Home() {
     return () => clearInterval(int);
   }, []);
 
-  if (!data) return <div style={{background:'#000', color:'#0f0', height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'monospace'}}>SYSTEM_RECOVERY_V45...</div>;
+  if (!data) return <div className="loading">RECONSTRUCTING_V47_DATA_STREAM...</div>;
 
   return (
     <div className="dashboard">
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V45 // PLATINUM</span></h1>
+        <h1 className="title">MADAD OREF <span className="v">V47 // PLATINUM_MAX</span></h1>
         <div className="sync white">LAST_SYNC: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
 
+      {/* TOP: GAUGES & TRIGGER TRACKER */}
       <div className="main-layout">
         <section className="gauges-area card">
-          <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color="#00FF00" />
-          <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color="#FF0000" />
+          <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color={data.israel.color} />
+          <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color={data.us_iran.color} />
         </section>
 
-        <section className="card">
+        <section className="card rationale-box">
           <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
           <div className="trigger-list">
             <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
@@ -75,24 +72,27 @@ export default function Home() {
         </section>
       </div>
 
+      {/* MID: TIMELINE & MARKETS */}
       <div className="secondary-grid">
         <section className="card">
           <div className="section-title white">TIMELINE PROJECTION</div>
           <div className="timeline white">
-            <div>NOW: <b>{data.israel.val}%</b></div>
-            <div>+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
-            <div>+72H: <b>~{Math.round(data.israel.val * 0.8)}% ↓</b></div>
+            <div className="t-item">NOW: <b>{data.israel.val}%</b></div>
+            <div className="t-item">+24H: <b>~{Math.round(data.israel.val * 1.1)}% ↑</b></div>
+            <div className="t-item">+72H: <b>~{Math.round(data.israel.val * 0.85)}% ↓</b></div>
           </div>
         </section>
+
         <section className="card">
-          <div className="section-title white">MARKET INDICATORS</div>
-          <div className="m-row white">Brent Crude: <b>$66.42</b> <span style={{color: '#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>3.14</b> <span className="white">→</span></div>
-          <div className="m-row white">Polymarket: <b>18%</b> <span className="green">↑</span></div>
+          <div className="section-title white">MARKET INDICATORS (AUTO_SYNC)</div>
+          <div className="m-row white">Brent Crude: <b>${data.markets.brent}</b> <span style={{color: '#f00'}}>↓</span></div>
+          <div className="m-row white">USD/ILS: <b>{data.markets.ils}</b> <span className="white">→</span></div>
+          <div className="m-row white">Polymarket: <b>{data.markets.poly}%</b> <span className="green">↑</span></div>
         </section>
       </div>
 
-      <section className="card">
+      {/* EXPERT ANALYTICS */}
+      <section className="card expert-section">
         <div className="section-title green">VERIFIED EXPERT ANALYTICS (ISW / WSJ / CENTCOM)</div>
         {data.experts.map((e, i) => (
           <div key={i} className="expert-item">
@@ -102,10 +102,11 @@ export default function Home() {
         ))}
       </section>
 
+      {/* DYNAMIC LOG FEED */}
       <section className="card log-card">
-        <div className="section-title white">RAW_SIGNAL_FEED (DYNAMIC_OSINT)</div>
+        <div className="section-title white">RAW_SIGNAL_FEED (DYNAMIC_OSINT_STREAM)</div>
         <div className="feed-box">
-          {(data.feed || data.logs).map((l, i) => (
+          {data.feed.map((l, i) => (
             <div key={i} className="log-entry white">
               <span className="feed-time">[{new Date().toLocaleTimeString()}]</span> {l}
             </div>
@@ -118,30 +119,40 @@ export default function Home() {
       </footer>
 
       <style jsx global>{`
-        body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 10px; }
+        body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 10px; line-height: 1.2; }
         .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF0000; margin-bottom: 15px; padding-bottom: 8px; }
-        .title { margin: 0; font-size: 1.1rem; font-weight: 900; }
+        .title { margin: 0; font-size: 1.1rem; font-weight: 900; letter-spacing: -1px; }
         .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
+        .loading { background:#000; color:#0f0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:monospace; }
+        
         .white { color: #FFFFFF !important; }
         .green { color: #00FF00 !important; }
-        .main-layout, .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
-        .gauges-area { display: flex; gap: 10px; background: #080808; border: 1px solid #222; padding: 12px; justify-content: space-around; }
+        
+        .main-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+        .gauges-area { display: flex; gap: 10px; background: #080808; padding: 12px; justify-content: space-around; }
+        
         .card { border: 1px solid #333; background: #050505; padding: 12px; }
         .section-title { font-size: 0.65rem; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        
         .trigger-list { font-size: 0.75rem; line-height: 1.8; }
         .dim { color: #fff; opacity: 0.2; }
         .active { color: #00FF00; font-weight: bold; }
+
+        .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
         .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
         .m-row { font-size: 0.85rem; margin-bottom: 6px; }
+        
         .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
         .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
         .FACT { background: #004400; color: #00FF00; }
         .ANALYSIS { background: #443300; color: #FFA500; }
+        
         .feed-box { height: 160px; overflow-y: auto; }
         .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
         .feed-time { color: #0f0; margin-right: 8px; }
-        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; }
+        .footer { font-size: 0.6rem; border-top: 1px solid #333; margin-top: 20px; padding: 15px 0; opacity: 0.6; }
+
         @media (min-width: 768px) {
           .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
           .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
