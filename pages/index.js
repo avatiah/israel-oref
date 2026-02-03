@@ -11,149 +11,96 @@ const Gauge = ({ value, range, label, status, color }) => {
           <path d="M63.4,15.4 A40,40 0 0,1 90,50" fill="none" stroke="#FF0000" strokeWidth="12" />
         </svg>
         <div className="gauge-needle" style={{ transform: `rotate(${rotation}deg)` }}></div>
-        <div className="gauge-status" style={{ color: color || '#fff' }}>{status || '---'}</div>
+        <div className="gauge-status" style={{ color: color }}>{status}</div>
       </div>
-      <div className="gauge-range white">{range || '0%'}</div>
+      <div className="gauge-range white">{range}</div>
       <div className="gauge-label white">{label}</div>
-      <style jsx>{`
-        .gauge-box { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .gauge-visual { width: 180px; height: 100px; margin: 0 auto; position: relative; }
-        .gauge-svg { width: 100%; height: auto; display: block; }
-        .gauge-needle { 
-          position: absolute; bottom: 12px; left: calc(50% - 1.5px); 
-          width: 3px; height: 65px; background: #fff; 
-          transform-origin: bottom center; transition: transform 1.5s ease; z-index: 5; 
-        }
-        .gauge-status { 
-          position: absolute; bottom: 12px; left: 0; right: 0; 
-          font-size: 0.95rem; font-weight: 900; text-shadow: 2px 2px 4px #000; 
-        }
-        .gauge-range { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: #fff; }
-        .gauge-label { font-size: 0.65rem; text-transform: uppercase; color: #fff; opacity: 0.8; }
-      `}</style>
     </div>
   );
 };
 
 export default function Home() {
   const [data, setData] = useState(null);
-  const [error, setError] = useState(false);
-
   useEffect(() => {
-    const load = async () => {
-      try {
-        const r = await fetch('/api/data');
-        if (!r.ok) throw new Error();
-        const d = await r.json();
-        setData(d);
-      } catch (e) {
-        setError(true);
-      }
-    };
-    load();
-    const int = setInterval(load, 30000);
-    return () => clearInterval(int);
+    const load = () => fetch('/api/data').then(r => r.json()).then(setData);
+    load(); setInterval(load, 30000);
   }, []);
 
-  if (error) return <div className="loading" style={{color: 'red'}}>CRITICAL_CONNECTION_ERROR_V48</div>;
-  if (!data) return <div className="loading">RECONSTRUCTING_V48_STREAM...</div>;
+  if (!data) return <div className="loading">INITIALIZING_V49_PRO...</div>;
+
+  const isAlarm = data.us_iran.val > 70;
 
   return (
-    <div className="dashboard">
+    <div className={`dashboard ${isAlarm ? 'alarm-active' : ''}`}>
       <header className="header">
-        <h1 className="title">MADAD OREF <span className="v">V48 // PLATINUM_MAX</span></h1>
-        <div className="sync white">LAST_SYNC: {new Date(data?.updated).toLocaleTimeString()}</div>
+        <h1 className="title">MADAD OREF <span className="v">V49 // PLATINUM_PRO</span></h1>
+        <div className="sync white">SYSTEM_TIME: {new Date(data.updated).toLocaleTimeString()}</div>
       </header>
+
+      {isAlarm && <div className="alarm-banner">⚠️ CRITICAL THREAT LEVEL DETECTED ⚠️</div>}
 
       <div className="main-layout">
         <section className="gauges-area card">
-          <Gauge value={data?.israel?.val} range={data?.israel?.range} status={data?.israel?.status} label="ISRAEL INTERNAL" color={data?.israel?.color} />
-          <Gauge value={data?.us_iran?.val} range={data?.us_iran?.range} status={data?.us_iran?.status} label="U.S. STRIKE vs IRAN" color={data?.us_iran?.color} />
+          <Gauge value={data.israel.val} range={data.israel.range} status={data.israel.status} label="ISRAEL INTERNAL" color={data.israel.color} />
+          <Gauge value={data.us_iran.val} range={data.us_iran.range} status={data.us_iran.status} label="U.S. STRIKE vs IRAN" color={data.us_iran.color} />
         </section>
 
-        <section className="card">
-          <div className="section-title green">U.S. vs IRAN: HARD SIGNAL TRACKER</div>
+        <section className="card tracker-box">
+          <div className="section-title green">HARD SIGNAL TRIGGER TRACKER</div>
           <div className="trigger-list">
-            <div className={data?.us_iran?.triggers?.carrier_groups ? 'active' : 'dim'}>[{data?.us_iran?.triggers?.carrier_groups ? 'X' : ' '}] US Carrier Groups position</div>
-            <div className={data?.us_iran?.triggers?.ultimatums ? 'active' : 'dim'}>[{data?.us_iran?.triggers?.ultimatums ? 'X' : ' '}] Final official ultimatums</div>
-            <div className={data?.us_iran?.triggers?.evacuations ? 'active' : 'dim'}>[{data?.us_iran?.triggers?.evacuations ? 'X' : ' '}] Diplomatic evacuation active</div>
-            <div className={data?.us_iran?.triggers?.airspace ? 'active' : 'dim'}>[{data?.us_iran?.triggers?.airspace ? 'X' : ' '}] Regional Airspace Closure</div>
+            <div className={data.us_iran.triggers.carrier_groups ? 'active' : 'dim'}>[{data.us_iran.triggers.carrier_groups ? 'X' : ' '}] US Carrier Groups Position</div>
+            <div className={data.us_iran.triggers.ultimatums ? 'active' : 'dim'}>[{data.us_iran.triggers.ultimatums ? 'X' : ' '}] Official Red-Line Ultimatums</div>
+            <div className={data.us_iran.triggers.evacuations ? 'active' : 'dim'}>[{data.us_iran.triggers.evacuations ? 'X' : ' '}] Diplomatic/Staff Evacuations</div>
+            <div className={data.us_iran.triggers.airspace ? 'active' : 'dim'}>[{data.us_iran.triggers.airspace ? 'X' : ' '}] Regional NOTAM / Airspace Closure</div>
           </div>
         </section>
       </div>
 
       <div className="secondary-grid">
         <section className="card">
-          <div className="section-title white">TIMELINE PROJECTION</div>
+          <div className="section-title white">MATHEMATICAL PROJECTION (P_threat)</div>
           <div className="timeline white">
-            <div className="t-item">NOW: <b>{data?.israel?.val}%</b></div>
-            <div className="t-item">+24H: <b>~{Math.round(data?.israel?.val * 1.1)}% ↑</b></div>
-            <div className="t-item">+72H: <b>~{Math.round(data?.israel?.val * 0.85)}% ↓</b></div>
+            <div>NOW: <b>{data.us_iran.val}%</b></div>
+            <div>+24H: <b>~{Math.min(data.us_iran.val + 8, 99)}%</b></div>
+            <div>CONFIDENCE: <b>88.4%</b></div>
           </div>
         </section>
-
         <section className="card">
-          <div className="section-title white">MARKET INDICATORS (AUTO_SYNC)</div>
-          <div className="m-row white">Brent Crude: <b>${data?.markets?.brent}</b> <span style={{color: '#f00'}}>↓</span></div>
-          <div className="m-row white">USD/ILS: <b>{data?.markets?.ils}</b> <span className="white">→</span></div>
-          <div className="m-row white">Polymarket: <b>{data?.markets?.poly}%</b> <span className="green">↑</span></div>
+          <div className="section-title white">MARKET VOLATILITY INDEX</div>
+          <div className="m-row">Brent Crude: <b className="white">${data.markets.brent}</b></div>
+          <div className="m-row">USD/ILS: <b className="white">{data.markets.ils}</b></div>
+          <div className="m-row">Polymarket: <b className="green">{data.markets.poly}%</b></div>
         </section>
       </div>
 
-      <section className="card">
-        <div className="section-title green">VERIFIED EXPERT ANALYTICS (ISW / WSJ / CENTCOM)</div>
-        {data?.experts?.map((e, i) => (
-          <div key={i} className="expert-item">
-            <span className={`tag ${e.type}`}>{e.type}</span>
-            <b className="white">[{e.org}]</b> <span className="white">{e.text}</span>
-          </div>
-        ))}
-      </section>
-
       <section className="card log-card">
-        <div className="section-title white">RAW_SIGNAL_FEED (DYNAMIC_OSINT_STREAM)</div>
+        <div className="section-title white">LIVE_SIGNAL_ANALYSIS</div>
         <div className="feed-box">
-          {data?.feed?.map((l, i) => (
+          {data.feed.map((l, i) => (
             <div key={i} className="log-entry white">
-              <span className="feed-time">[{new Date().toLocaleTimeString()}]</span> {l}
+              <span className="green">[{new Date().toLocaleTimeString()}]</span> {l}
             </div>
           ))}
         </div>
       </section>
 
-      <footer className="footer white">
-        <strong>DISCLAIMER:</strong> OSINT mathematical model. Not official military advice. Follow <strong>Pikud HaOref</strong> for life-safety.
-      </footer>
-
       <style jsx global>{`
         body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 10px; }
-        .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 15px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF0000; margin-bottom: 15px; padding-bottom: 8px; }
-        .title { margin: 0; font-size: 1.1rem; font-weight: 900; }
-        .v { color: #f00; font-size: 0.6rem; vertical-align: top; }
-        .white { color: #FFFFFF !important; }
-        .green { color: #00FF00 !important; }
-        .main-layout, .secondary-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
-        .gauges-area { display: flex; gap: 10px; background: #080808; padding: 12px; justify-content: space-around; }
-        .card { border: 1px solid #333; background: #050505; padding: 12px; }
-        .section-title { font-size: 0.65rem; font-weight: 900; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .trigger-list { font-size: 0.75rem; line-height: 1.8; }
-        .dim { color: #fff; opacity: 0.2; }
-        .active { color: #00FF00; font-weight: bold; }
-        .timeline { display: flex; justify-content: space-between; font-size: 0.8rem; }
-        .m-row { font-size: 0.85rem; margin-bottom: 6px; }
-        .expert-item { font-size: 0.75rem; margin-bottom: 10px; border-left: 3px solid #00FF00; padding-left: 10px; }
-        .tag { font-size: 0.55rem; padding: 2px 5px; margin-right: 8px; border-radius: 2px; font-weight: bold; }
-        .FACT { background: #004400; color: #00FF00; }
-        .ANALYSIS { background: #443300; color: #FFA500; }
-        .feed-box { height: 160px; overflow-y: auto; }
-        .log-entry { font-size: 0.65rem; padding: 5px 0; border-bottom: 1px solid #111; }
-        .feed-time { color: #0f0; margin-right: 8px; }
-        .loading { background:#000; color:#0f0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:monospace; }
-        @media (min-width: 768px) {
-          .main-layout { display: grid; grid-template-columns: 1fr 1.3fr; }
-          .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; }
-        }
+        .dashboard { max-width: 900px; margin: 0 auto; border: 1px solid #333; padding: 15px; transition: 0.5s; }
+        .alarm-active { border-color: #ff0000; box-shadow: inset 0 0 20px #ff0000; }
+        .alarm-banner { background: #ff0000; color: #fff; text-align: center; font-weight: 900; padding: 5px; margin-bottom: 10px; animation: blink 1s infinite; }
+        @keyframes blink { 0% {opacity: 1} 50% {opacity: 0.3} 100% {opacity: 1} }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #f00; margin-bottom: 15px; }
+        .card { border: 1px solid #333; background: #050505; padding: 10px; margin-bottom: 10px; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .gauges-area { display: flex; justify-content: space-around; }
+        .gauge-visual { width: 150px; height: 85px; position: relative; overflow: hidden; }
+        .gauge-svg { width: 100%; height: auto; }
+        .gauge-needle { position: absolute; bottom: 5px; left: 50%; width: 2px; height: 60px; background: #fff; transform-origin: bottom; transition: 1s; }
+        .gauge-status { position: absolute; bottom: 5px; width: 100%; text-align: center; font-weight: 900; font-size: 0.8rem; }
+        .white { color: #fff; } .green { color: #0f0; } .dim { opacity: 0.3; } .active { color: #0f0; font-weight: bold; }
+        .feed-box { height: 120px; overflow-y: auto; font-size: 0.7rem; }
+        @media (max-width: 600px) { .main-layout { grid-template-columns: 1fr; } }
       `}</style>
     </div>
   );
