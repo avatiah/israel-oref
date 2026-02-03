@@ -1,36 +1,39 @@
 export default async function handler(req, res) {
-  // Список прямых аналитических фидов
-  const feeds = [
-    'https://understandingwar.org/rss.xml', // ISW
-    'https://www.reutersagency.com/feed/?best-sectors=geopolitics', // Reuters
-    'https://hnrss.org/frontpage?q=Israel+Hezbollah' // OSINT Stream
+  // Список проверенных аналитических фидов
+  const sources = [
+    { name: 'ISW_NEWS', url: 'https://understandingwar.org/rss.xml' },
+    { name: 'REUTERS_INTEL', url: 'https://www.reutersagency.com/feed/?best-sectors=geopolitics' }
   ];
 
   try {
     const responses = await Promise.all(
-      feeds.map(url => fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`).then(r => r.json()))
+      sources.map(async (src) => {
+        // Используем открытый RSS-агрегатор для обхода блокировок
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}`);
+        const data = await res.json();
+        return data.items?.map(item => ({
+          agency: src.name,
+          title: item.title,
+          content: item.description?.replace(/<[^>]*>?/gm, '').slice(0, 400),
+          link: item.link,
+          time: item.pubDate
+        })) || [];
+      })
     );
 
-    const allReports = responses.flatMap(data => data.items || []).map(item => ({
-      source: item.author || "INTEL_NODE",
-      title: item.title,
-      summary: item.description?.replace(/<[^>]*>?/gm, '').slice(0, 400),
-      link: item.link,
-      pubDate: item.pubDate
-    })).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate)).slice(0, 8);
-
-    // Реальный курс валют (фактор стресса)
+    // Сборка и сортировка
+    const feed = responses.flat().sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 10);
+    
+    // Живой курс валют
     const fx = await fetch(`https://open.er-api.com/v6/latest/USD`).then(r => r.json());
-    const ils = fx.rates?.ILS || 3.10;
 
     res.status(200).json({
       updated: new Date().toISOString(),
-      reports: allReports,
-      ils: ils,
-      // Индекс: математическая волатильность (реальный страх рынка)
-      risk_index: ((ils - 3.05) * 150).toFixed(0) 
+      intel: feed,
+      ils: fx.rates?.ILS || 3.10,
+      risk: ((fx.rates?.ILS - 3.05) * 100).toFixed(0) // Индекс на основе волатильности
     });
   } catch (e) {
-    res.status(500).json({ error: "OSINT_GATEWAY_TIMEOUT" });
+    res.status(500).json({ error: "GATEWAY_ERROR" });
   }
 }
