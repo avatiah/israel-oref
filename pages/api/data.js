@@ -1,56 +1,60 @@
-export const dynamic = 'force-dynamic';
+// pages/api/data.js
 
 export default async function handler(req, res) {
   try {
-    const salt = Math.random().toString(36).substring(7);
+    // 1. АВТОМАТИЧЕСКИЙ КУРС ВАЛЮТ (Бесплатный источник)
+    const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+    const fxData = await fxRes.json();
+    const ils = fxData.rates.ILS.toFixed(2);
+
+    // 2. АВТОМАТИЧЕСКИЕ НОВОСТИ (Через бесплатный RSS-to-JSON мост)
+    // Используем фид мировых новостей, который всегда доступен
+    const newsRes = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://feeds.reuters.com/reuters/topNews');
+    const newsData = await newsRes.json();
     
-    // Сбор данных из 3 бесплатных источников:
-    // 1. NASA FIRMS (Термальные аномалии/пожары - имитация через RSS)
-    // 2. Google News OSINT (Авиация и Флот)
-    // 3. Скрапинг публичного превью Telegram (через веб-интерфейс t.me/s/...)
-    
-    const sources = [
-      `https://news.google.com/rss/search?q=Israel+Lebanon+military+activity+NASA+FIRMS+fire&hl=en-US&cache=${salt}`,
-      `https://news.google.com/rss/search?q=USS+Abraham+Lincoln+position+ADS-B+reconnaissance&hl=en-US&cache=${salt}`
-    ];
+    const latestNews = newsData.items ? newsData.items.slice(0, 5).map(i => i.title) : [];
 
-    const responses = await Promise.all(sources.map(s => fetch(s).then(r => r.text())));
-    
-    let rawSignals = [];
-    responses.forEach(xml => {
-      const items = [...xml.matchAll(/<title>(.*?)<\/title>/g)].map(m => m[1]);
-      rawSignals.push(...items);
-    });
+    // 3. АВТОМАТИЧЕСКАЯ ЛОГИКА ИНДЕКСОВ (Пример алгоритма)
+    // Если в заголовках есть "Iran", "Strike", "Missile" — индекс растет автоматически
+    const dangerWords = ["iran", "strike", "missile", "war", "attack", "israel", "hezbollah"];
+    const signalStrength = latestNews.filter(n => 
+      dangerWords.some(word => n.toLowerCase().includes(word))
+    ).length;
 
-    // Формируем "сырые" OSINT теги для ленты
-    const dynamicFeed = [
-      `[NASA_FIRMS] ${Math.random() > 0.5 ? 'No major thermal anomalies in Galilee' : 'Active heat signatures detected in S. Lebanon'}`,
-      `[ADS-B] GlobalHawk/RC-135 activity detected in East Med`,
-      `[MARITIME] CSG-3 (USS Abraham Lincoln) maintaining Red Sea posture`,
-      ...rawSignals.slice(0, 10).map(s => `[SIGNAL] ${s.split(' - ')[0]}`)
-    ];
+    // Базовый расчет (динамика на основе новостного фона)
+    const baseThreat = 40; 
+    const dynamicThreat = Math.min(baseThreat + (signalStrength * 12), 98);
 
-    // Базовая логика индекса (на основе ключевых слов в фиде)
-    const stress = dynamicFeed.filter(s => /strike|attack|missile|fire/i.test(s)).length;
-    const us_val = 18 + stress;
-    const isr_val = 15 + (stress * 0.5);
-
-    res.status(200).json({
-      israel: { val: isr_val, range: "14-22%", status: "MODERATE" },
-      us_iran: { val: us_val, range: "15-25%", status: "STANDBY", triggers: {
-        carrier_groups: true,
-        ultimatums: false,
-        evacuations: false,
-        airspace: true
-      }},
+    const data = {
+      updated: new Date().toISOString(),
+      israel: {
+        val: dynamicThreat - 5,
+        range: `${dynamicThreat - 10}-${dynamicThreat}%`,
+        status: dynamicThreat > 70 ? "CRITICAL" : (dynamicThreat > 50 ? "ELEVATED" : "STANDBY"),
+        color: dynamicThreat > 70 ? "#FF0000" : (dynamicThreat > 50 ? "#FFFF00" : "#00FF00")
+      },
+      us_iran: {
+        val: dynamicThreat + 5,
+        range: `${dynamicThreat}-${dynamicThreat + 10}%`,
+        status: dynamicThreat > 65 ? "HIGH_ALERT" : "STABLE",
+        triggers: {
+          carrier_groups: true, // Можно завязать на скрейпинг MarineTraffic (но это сложнее)
+          ultimatums: signalStrength > 2,
+          evacuations: signalStrength > 3,
+          airspace: false
+        }
+      },
       experts: [
-        { org: "NASA", type: "FACT", text: "Thermal monitoring shows standard agricultural fires; no massive impact craters detected." },
-        { org: "OSINT_DR", type: "SIGNAL", text: "Heavy GPS spoofing (AisLib) reported in Haifa/Tel-Aviv sectors." }
+        { type: "FACT", org: "REUTERS", text: latestNews[0] || "Monitoring regional stability." },
+        { type: "ANALYSIS", org: "AUTO_OSINT", text: `Detected ${signalStrength} high-priority signals in last cycle.` }
       ],
-      feed: dynamicFeed,
-      updated: new Date().toISOString()
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'FETCH_ERROR' });
+      feed: latestNews.length > 0 ? latestNews : ["Waiting for incoming signal packet..."]
+    };
+
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate'); // Кэш на 60 сек, чтобы не спамить источники
+    res.status(200).json(data);
+
+  } catch (error) {
+    res.status(500).json({ error: "Data collection failed" });
   }
 }
