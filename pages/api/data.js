@@ -1,43 +1,34 @@
 export default async function handler(req, res) {
-  const ALPHA_KEY = 'SEUC23CF8DETWZS7';
-  let brent = "0.00";
-  let ils = "0.00";
-  let news = [];
-
   try {
-    // 1. РЕАЛЬНАЯ НЕФТЬ (Индикатор глобального риска)
-    const brentRes = await fetch(`https://www.alphavantage.co/query?function=BRENT&api_key=${ALPHA_KEY}`);
-    const brentJson = await brentRes.json();
-    brent = brentJson?.data?.[0]?.value || "82.40";
+    // 1. Агрегация потоков (ISW и Reuters)
+    const sources = [
+      'https://api.rss2json.com/v1/api.json?rss_url=https://understandingwar.org/rss.xml',
+      'https://api.rss2json.com/v1/api.json?rss_url=https://www.reutersagency.com/feed/?best-sectors=geopolitics'
+    ];
 
-    // 2. РЕАЛЬНЫЙ КУРС ШЕКЕЛЯ (Индикатор локального риска)
-    const fxRes = await fetch(`https://open.er-api.com/v6/latest/USD`);
-    const fxData = await fxRes.json();
-    ils = fxData?.rates?.ILS?.toFixed(2) || "3.70";
-
-    // 3. РЕАЛЬНЫЙ OSINT-ПОТОК (Последние события)
-    const rssRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://www.aljazeera.com/xml/rss/all.xml`);
-    const rssData = await rssRes.json();
-    news = rssData.items?.slice(0, 5).map(item => ({
+    const responses = await Promise.all(sources.map(s => fetch(s).then(r => r.json())));
+    
+    // Формируем чистый массив аналитики
+    const intel = responses.flatMap(repo => repo.items || []).map(item => ({
+      agency: item.author || "STRATEGIC_INTEL",
       title: item.title,
-      source: "LIVE_FEED",
-      time: new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    })) || [];
+      summary: item.description?.replace(/<[^>]*>?/gm, '').slice(0, 250),
+      link: item.link,
+      ts: new Date(item.pubDate).getTime()
+    })).sort((a, b) => b.ts - a.ts).slice(0, 10);
 
-    // 4. АВТОМАТИЧЕСКИЙ РАСЧЕТ ИНДЕКСА (Математическая модель от реальных цифр)
-    // Чем выше курс шекеля и цена нефти относительно нормы, тем выше индекс
-    const baseIls = 3.65;
-    const ilsFactor = (parseFloat(ils) - baseIls) * 100;
-    const finalIndex = Math.min(Math.max(60 + ilsFactor, 0), 100).toFixed(0);
-
+    // 2. Рыночные индикаторы страха (Только живой поток)
+    const fx = await fetch(`https://open.er-api.com/v6/latest/USD`).then(r => r.json());
+    
     res.status(200).json({
       updated: new Date().toISOString(),
-      index: finalIndex,
-      brent,
-      ils,
-      news
+      intel: intel,
+      markets: {
+        ils: fx.rates?.ILS?.toFixed(2),
+        index: ((fx.rates?.ILS - 3.65) * 100 + 40).toFixed(0) // Математический индекс на базе курса
+      }
     });
   } catch (e) {
-    res.status(500).json({ error: "DATA_LINK_FAILURE" });
+    res.status(500).json({ error: "GATEWAY_TIMEOUT" });
   }
 }
