@@ -1,112 +1,86 @@
 import React, { useState, useEffect } from 'react';
 
-export default function MadadHaOref() {
+export default function MadadHaOrefRealtime() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    const sync = async () => {
-      try {
-        const res = await fetch('/api/data');
-        if (!res.ok) throw new Error('API_OFFLINE');
-        const json = await res.json();
-        setData(json);
-      } catch (e) {
-        console.error("Critical Sync Failure");
-      }
-    };
+    const sync = () => fetch('/api/data').then(r => r.json()).then(setData).catch(console.error);
     sync();
     const t = setInterval(sync, 60000);
     return () => clearInterval(t);
   }, []);
 
-  // Если данных нет, показываем терминальную загрузку
-  if (!data || !data.fronts) {
-    return (
-      <div className="sys-loading">
-        CONNECTING_TO_STRATEGIC_NODES...
-        <style jsx>{`
-          .sys-loading { 
-            height: 100vh; background: #000; color: #f00; 
-            display: flex; align-items: center; justify-content: center; 
-            font-family: monospace; font-size: 0.8rem; letter-spacing: 2px;
-          }
-        `}</style>
-      </div>
-    );
-  }
+  if (!data) return <div className="loading">SYNCING_REAL_TIME_DATA...</div>;
 
   return (
-    <div className="madad-root">
-      <header className="main-nav">
+    <div className="madad-mobile">
+      <header className="header">
         <div className="brand">MADAD_HAOREF</div>
-        <div className="total-idx">
-          TOTAL_RISK: <span className="red-glow">{data.total_index}</span>
-        </div>
+        <div className="sync-tag">LIVE_DATA_NODE</div>
       </header>
 
-      {/* Исправленный блок: теги теперь симметричны */}
-      <section className="summary-box">
-        <div className="tag">STRATEGIC_SUMMARY</div>
-        <p>{data.strategic_summary}</p>
+      {/* РЕАЛЬНЫЙ ИНДЕКС БЕЗОПАСНОСТИ */}
+      <section className="index-hero">
+        <div className="label">SECURITY_RISK_INDEX</div>
+        <div className="value">{data.index}</div>
+        <div className="status-bar">
+          <div className="progress" style={{width: `${data.index}%`}}></div>
+        </div>
+        <div className="warning">ПОКАЗАТЕЛЬ ОСНОВАН НА ВОЛАТИЛЬНОСТИ РЫНКА И OSINT-ПОТОКЕ</div>
       </section>
 
-      <main className="fronts-container">
-        {Object.entries(data.fronts).map(([id, front]) => (
-          <article key={id} className="front-card">
-            <div className="front-header">
-              <span className="front-name">{id.replace('_', ' ').toUpperCase()}</span>
-              <span className="front-score">{front.score}%</span>
-            </div>
-            
-            <div className="front-body">
-              <div className="info-bit">
-                <label>ЗАДЕЙСТВОВАННЫЕ СИЛЫ:</label>
-                <span>{front.forces}</span>
-              </div>
-              <div className="info-bit">
-                <label>ХАРАКТЕР УГРОЗЫ:</label>
-                <span className="threat-highlight">{front.threat}</span>
-              </div>
-              <div className="analyst-box">
-                <label>ВЫВОДЫ OSINT-ГРУППЫ:</label>
-                <p>{front.analyst_view}</p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </main>
+      {/* ЭКОНОМИЧЕСКИЕ ИНДИКАТОРЫ УГРОЗЫ */}
+      <div className="market-grid">
+        <div className="m-card">
+          <label>USD/ILS</label>
+          <div className="val">{data.ils}</div>
+        </div>
+        <div className="m-card">
+          <label>BRENT_OIL</label>
+          <div className="val">${data.brent}</div>
+        </div>
+      </div>
 
-      <footer className="footer-info">
-        LAST_SYNC: {new Date(data.updated).toLocaleTimeString()} // ASHDOD_NODE
+      {/* ЖИВАЯ ЛЕНТА СОБЫТИЙ (БЕЗ РЕДАКТУРЫ) */}
+      <section className="news-feed">
+        <div className="label">RAW_INTELLIGENCE_STREAM</div>
+        {data.news.map((item, i) => (
+          <div key={i} className="news-item">
+            <span className="time">[{item.time}]</span>
+            <p className="title">{item.title}</p>
+          </div>
+        ))}
+      </section>
+
+      <footer className="footer">
+        REF_TIME: {new Date(data.updated).toLocaleString()}
       </footer>
 
       <style jsx global>{`
         body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; padding: 10px; }
-        .madad-root { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        .madad-mobile { max-width: 450px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #f00; padding: 10px 0; }
+        .brand { font-weight: bold; letter-spacing: 2px; }
+        .sync-tag { font-size: 0.6rem; color: #0f0; border: 1px solid #040; padding: 2px 5px; }
         
-        .main-nav { display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding: 15px 0; }
-        .red-glow { color: #f00; text-shadow: 0 0 10px #f00; font-weight: bold; }
+        .index-hero { background: #080808; border: 1px solid #1a1a1a; padding: 25px; text-align: center; }
+        .index-hero .value { font-size: 4rem; font-weight: bold; color: #f00; margin: 10px 0; }
+        .status-bar { height: 4px; background: #111; width: 100%; margin: 15px 0; }
+        .progress { height: 100%; background: #f00; box-shadow: 0 0 10px #f00; transition: 1s; }
+        .warning { font-size: 0.5rem; color: #444; }
 
-        .summary-box { background: #0a0000; border: 1px solid #200; padding: 15px; border-left: 4px solid #f00; }
-        .tag { font-size: 0.6rem; color: #555; margin-bottom: 8px; letter-spacing: 2px; }
-        .summary-box p { font-size: 0.85rem; line-height: 1.5; margin: 0; color: #d1d1d1; }
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .m-card { background: #050505; border: 1px solid #111; padding: 15px; text-align: center; }
+        .m-card label { font-size: 0.6rem; color: #555; display: block; margin-bottom: 5px; }
+        .m-card .val { font-size: 1.2rem; font-weight: bold; color: #fff; }
 
-        .front-card { background: #050505; border: 1px solid #1a1a1a; margin-bottom: 12px; border-left: 4px solid #333; }
-        .front-header { display: flex; justify-content: space-between; padding: 10px 15px; background: #0f0f0f; }
-        .front-name { font-weight: bold; font-size: 0.75rem; color: #999; }
-        .front-score { color: #f00; font-weight: bold; }
-
-        .front-body { padding: 15px; }
-        .info-bit { margin-bottom: 12px; }
-        .info-bit label { display: block; color: #444; font-size: 0.6rem; margin-bottom: 4px; }
-        .info-bit span { font-size: 0.8rem; }
-        .threat-highlight { color: #ff4d4d; font-weight: bold; }
-
-        .analyst-box { background: #000; padding: 10px; border: 1px solid #111; margin-top: 10px; }
-        .analyst-box label { color: #0f0; font-size: 0.55rem; margin-bottom: 5px; display: block; }
-        .analyst-box p { font-size: 0.75rem; color: #999; margin: 0; line-height: 1.4; }
-
-        .footer-info { text-align: center; font-size: 0.6rem; color: #222; padding: 20px 0; }
+        .news-feed { display: flex; flex-direction: column; gap: 10px; }
+        .news-item { border-left: 2px solid #f00; padding-left: 10px; margin-bottom: 10px; }
+        .time { color: #f00; font-size: 0.7rem; font-weight: bold; }
+        .title { margin: 5px 0 0 0; font-size: 0.85rem; color: #ccc; line-height: 1.3; }
+        
+        .footer { font-size: 0.6rem; color: #222; text-align: center; padding: 20px; }
+        .loading { height: 100vh; display: flex; align-items: center; justify-content: center; color: #f00; font-size: 0.8rem; letter-spacing: 3px; }
       `}</style>
     </div>
   );
