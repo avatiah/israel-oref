@@ -22,7 +22,7 @@ export default function MadadTerminal() {
   if (!data) return <div className="loading">RE-INITIALIZING_SYSTEM_V84...</div>;
 
   const getNeedleRotation = (value) => {
-    return (value / 100) * 180;
+    return (value / 100) * 180 - 90; // -90 чтобы 0% было слева, 100% справа
   };
 
   return (
@@ -170,15 +170,15 @@ export default function MadadTerminal() {
         }
         .gauge-arc {
           position: absolute;
-          inset: 0;
+          inset: -2px; /* тонкий внешний контур */
           background: conic-gradient(
             from 180deg at 50% 100%,
             #00ff00 0deg 60deg,
             #ffff00 60deg 120deg,
             #ff0000 120deg 180deg
           );
-          mask: radial-gradient(circle at 50% 100%, transparent 48%, black 50%);
-          -webkit-mask: radial-gradient(circle at 50% 100%, transparent 48%, black 50%);
+          mask: radial-gradient(circle at 50% 100%, transparent 46%, black 47%);
+          -webkit-mask: radial-gradient(circle at 50% 100%, transparent 46%, black 47%);
           border-radius: 220px 220px 0 0;
         }
         .gauge-center {
@@ -186,28 +186,28 @@ export default function MadadTerminal() {
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           background: #000000;
           border-radius: 50%;
-          border: 2px solid #444444;
+          border: 1px solid #444444;
           z-index: 5;
         }
         .gauge-needle {
           position: absolute;
           bottom: 0;
           left: 50%;
-          width: 5px;
-          height: 110px;
+          width: 4px;
+          height: 115px;
           background: #ffffff;
           transform-origin: bottom center;
           transition: transform 1.5s ease-out;
           z-index: 10;
           box-shadow: 
-            0 0 12px rgba(255,255,255,0.8),
-            0 0 6px rgba(0,0,0,0.9);
+            0 0 10px rgba(255,255,255,0.9),
+            0 0 5px rgba(0,0,0,0.8);
           border: 1px solid #000000;
-          border-radius: 5px 5px 0 0;
+          border-radius: 4px 4px 0 0;
         }
         .gauge-value {
           margin-top: 12px;
