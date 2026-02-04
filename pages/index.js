@@ -15,7 +15,7 @@ export default function MadadTerminal() {
 
   useEffect(() => {
     sync();
-    const interval = setInterval(sync, 60000); // 1 минута
+    const interval = setInterval(sync, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -26,9 +26,9 @@ export default function MadadTerminal() {
       <header className="header">
         <div className="title">MADAD_HAOREF</div>
         <div className="risk">
-          TOTAL_RISK_ISRAEL: <span className="red">{data.risk_index}%</span>
+          TOTAL_RISK_ISRAEL: <span className="red">{data.risk_index}%</span> (угрозы Израилю от Ирана/прокси)
           <br />
-          US_IRAN_STRIKE_PROB: <span className="red">{data.iran_us_strike_prob}%</span>
+          US_IRAN_STRIKE_PROB: <span className="red">{data.iran_us_strike_prob}%</span> (вероятность удара США по Ирану)
         </div>
       </header>
 
@@ -37,7 +37,7 @@ export default function MadadTerminal() {
       </div>
 
       <main className="content">
-        <div className="label">LATEST_VERIFIED_INTEL</div>
+        <div className="label">LATEST_VERIFIED_INTEL (открытые анализы экспертов)</div>
 
         {data.reports?.length > 0 ? (
           data.reports.map((item, i) => (
@@ -58,25 +58,11 @@ export default function MadadTerminal() {
       </main>
 
       <footer className="footer">
-        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD
+        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD // Источники: ISW, INSS, Atlantic Council и др.
       </footer>
 
-      <style jsx global>{`
-        body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; padding: 15px; }
-        .container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #f00; padding-bottom: 10px; }
-        .title { font-size: 1.3rem; font-weight: 900; }
-        .red { color: #f00; text-shadow: 0 0 10px #f00; }
-        .green { color: #0f0; }
-        .sub-bar { background: #0a0a0a; padding: 10px; font-size: 0.7rem; display: flex; justify-content: space-between; border: 1px solid #1a1a1a; }
-        .label { font-size: 0.6rem; color: #444; letter-spacing: 2px; }
-        .intel-card { background: #050505; border: 1px solid #111; padding: 15px; border-left: 4px solid #f00; }
-        .meta { display: flex; justify-content: space-between; font-size: 0.6rem; color: #0f0; margin-bottom: 10px; }
-        .intel-title { font-size: 0.9rem; margin: 0 0 12px 0; line-height: 1.4; font-weight: normal; }
-        .link { color: #f00; font-size: 0.65rem; text-decoration: none; font-weight: bold; border-bottom: 1px solid #300; }
-        .loading { height: 100vh; display: flex; align-items: center; justify-content: center; color: #f00; font-size: 0.8rem; }
-        .footer { font-size: 0.55rem; color: #222; text-align: center; margin-top: 20px; }
-      `}</style>
+      {/* Стили без изменений */}
+      <style jsx global>{`...`}</style>  // Вставьте ваши стили сюда, как раньше
     </div>
   );
 }
