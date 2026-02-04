@@ -8,12 +8,14 @@ export default function MadadTerminal() {
       const r = await fetch('/api/data');
       const d = await r.json();
       if (d.reports) setData(d);
-    } catch (e) { console.error("SYNC_LOST"); }
+    } catch (e) {
+      console.error("SYNC_LOST", e);
+    }
   };
 
   useEffect(() => {
     sync();
-    const interval = setInterval(sync, 60000);
+    const interval = setInterval(sync, 60000); // 1 минута
     return () => clearInterval(interval);
   }, []);
 
@@ -23,26 +25,36 @@ export default function MadadTerminal() {
     <div className="container">
       <header className="header">
         <div className="title">MADAD_HAOREF</div>
-        <div className="risk">TOTAL_RISK: <span className="red">{data.risk_index}%</span></div>
+        <div className="risk">
+          TOTAL_RISK_ISRAEL: <span className="red">{data.risk_index}%</span>
+          <br />
+          US_IRAN_STRIKE_PROB: <span className="red">{data.iran_us_strike_prob}%</span>
+        </div>
       </header>
 
       <div className="sub-bar">
-        <span>EXCHANGE: USD/ILS <b className="green">{data.ils}</b></span>
         <span>STATUS: <b className="green">DATA_STREAM_SYNCED</b></span>
       </div>
 
       <main className="content">
         <div className="label">LATEST_VERIFIED_INTEL</div>
-        {data.reports.length > 0 ? data.reports.map((item, i) => (
-          <article key={i} className="intel-card">
-            <div className="meta">
-              <span className="src">{item.agency.toUpperCase()}</span>
-              <span className="time">{new Date(item.ts).toLocaleTimeString()}</span>
-            </div>
-            <h3 className="intel-title">{item.title}</h3>
-            <a href={item.link} target="_blank" rel="noreferrer" className="link">OPEN_SOURCE_REPORT →</a>
-          </article>
-        )) : <div className="red">FATAL: NO_INCOMING_DATA</div>}
+
+        {data.reports?.length > 0 ? (
+          data.reports.map((item, i) => (
+            <article key={i} className="intel-card">
+              <div className="meta">
+                <span className="src">{item.agency.toUpperCase()}</span>
+                <span className="time">{new Date(item.ts).toLocaleTimeString()}</span>
+              </div>
+              <h3 className="intel-title">{item.title}</h3>
+              <a href={item.link} target="_blank" rel="noreferrer" className="link">
+                OPEN_SOURCE_REPORT →
+              </a>
+            </article>
+          ))
+        ) : (
+          <div className="red">FATAL: NO_INCOMING_DATA</div>
+        )}
       </main>
 
       <footer className="footer">
