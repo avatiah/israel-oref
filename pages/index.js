@@ -34,13 +34,12 @@ export default function MadadTerminal() {
       <div className="gauges">
         <div className="gauge-container">
           <div className="gauge-label">TOTAL RISK ISRAEL</div>
-          <div className="gauge-value-subtitle">
-            Current assessment (real-time aggregation)<br/>
+          <div className="gauge-subtitle">
+            Current assessment (real-time aggregation)<br />
             24–48 hour outlook
           </div>
           <div className="gauge">
             <div className="gauge-body">
-              {/* Только дуга окрашена */}
               <div className="gauge-arc"></div>
               <div className="gauge-center"></div>
               <div
@@ -54,8 +53,8 @@ export default function MadadTerminal() {
 
         <div className="gauge-container">
           <div className="gauge-label">US-IRAN STRIKE PROBABILITY</div>
-          <div className="gauge-value-subtitle">
-            Current assessment (real-time aggregation)<br/>
+          <div className="gauge-subtitle">
+            Current assessment (real-time aggregation)<br />
             24–48 hour outlook
           </div>
           <div className="gauge">
@@ -98,8 +97,8 @@ export default function MadadTerminal() {
       </main>
 
       <footer className="footer">
-        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD<br/>
-        Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.<br/>
+        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD<br />
+        Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.<br />
         <span className="disclaimer">
           DISCLAIMER: This is an automated aggregation of open-source expert analyses. 
           It is not official intelligence, not a prediction, and carries no liability. 
@@ -110,8 +109,8 @@ export default function MadadTerminal() {
       <style jsx global>{`
         body {
           background: #000;
-          color: #fff;
-          font-family: 'Courier New', monospace;
+          color: #e0e0e0;
+          font-family: 'Consolas', 'Courier New', monospace;
           margin: 0;
           padding: 15px;
         }
@@ -132,6 +131,7 @@ export default function MadadTerminal() {
         .title {
           font-size: 1.5rem;
           font-weight: 900;
+          color: #fff;
         }
         .gauges {
           display: flex;
@@ -143,54 +143,52 @@ export default function MadadTerminal() {
           text-align: center;
         }
         .gauge-label {
-          font-size: 1rem;
+          font-size: 1.1rem;
           margin-bottom: 4px;
-          color: #ccc;
+          color: #ffffff;
+          font-weight: bold;
         }
-        .gauge-value-subtitle {
-          font-size: 0.7rem;
-          color: #666;
-          line-height: 1.2;
-          margin-bottom: 6px;
+        .gauge-subtitle {
+          font-size: 0.75rem;
+          color: #aaaaaa;
+          line-height: 1.3;
+          margin-bottom: 8px;
         }
         .gauge {
           position: relative;
-          width: 160px;
-          height: 90px;
+          width: 180px;
+          height: 100px;
         }
         .gauge-body {
-          width: 160px;
-          height: 80px;
-          background: #111;
-          border-radius: 160px 160px 0 0;
+          width: 180px;
+          height: 90px;
+          background: #0f0f0f;
+          border-radius: 180px 180px 0 0;
           position: relative;
           overflow: hidden;
           border: 1px solid #333;
         }
         .gauge-arc {
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          inset: 0;
           background: conic-gradient(
             from 180deg at 50% 100%,
-            #0f0 0deg 60deg,
-            #ff0 60deg 120deg,
-            #f00 120deg 180deg
+            #0f0 0deg 60deg,    /* green */
+            #ff0 60deg 120deg,  /* yellow */
+            #f00 120deg 180deg  /* red */
           );
-          border-radius: 160px 160px 0 0;
-          mask: radial-gradient(transparent 40%, black 42%);
-          -webkit-mask: radial-gradient(transparent 40%, black 42%);
+          mask: radial-gradient(transparent 38%, black 40%);
+          -webkit-mask: radial-gradient(transparent 38%, black 40%);
+          border-radius: 180px 180px 0 0;
         }
         .gauge-center {
           position: absolute;
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 24px;
-          height: 24px;
-          background: #000;
+          width: 26px;
+          height: 26px;
+          background: #111;
           border-radius: 50%;
           border: 3px solid #555;
           z-index: 3;
@@ -199,78 +197,79 @@ export default function MadadTerminal() {
           position: absolute;
           bottom: 0;
           left: 50%;
-          width: 5px;
-          height: 78px;
-          background: linear-gradient(to top, #f00, #ff5555);
+          width: 6px;
+          height: 88px;
+          background: #ff0000;
           transform-origin: bottom center;
-          transition: transform 1.2s ease-out;
+          transition: transform 1.3s ease-out;
           z-index: 4;
-          box-shadow: 0 0 8px #f00;
-          border-radius: 5px 5px 0 0;
+          box-shadow: 0 0 12px #ff0000, 0 0 6px #ff4444;
+          border-radius: 6px 6px 0 0;
         }
         .gauge-value {
-          margin-top: 8px;
-          font-size: 1.4rem;
+          margin-top: 10px;
+          font-size: 1.5rem;
           font-weight: bold;
-          color: #fff;
+          color: #ffffff;
         }
-        .red { color: #f00; text-shadow: 0 0 10px #f00; }
-        .green { color: #0f0; text-shadow: 0 0 8px #0f0; }
+        .red { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
+        .green { color: #44ff44; text-shadow: 0 0 8px #00ff00; }
         .sub-bar {
           background: #0a0a0a;
-          padding: 10px;
-          font-size: 0.8rem;
-          border: 1px solid #1a1a1a;
+          padding: 12px;
+          font-size: 0.9rem;
+          border: 1px solid #222;
           text-align: center;
         }
         .label {
-          font-size: 0.7rem;
-          color: #444;
-          letter-spacing: 2px;
-          margin-bottom: 10px;
+          font-size: 0.75rem;
+          color: #555;
+          letter-spacing: 1.5px;
+          margin-bottom: 12px;
         }
         .intel-card {
-          background: #050505;
-          border: 1px solid #111;
-          padding: 15px;
-          border-left: 4px solid #f00;
+          background: #0a0a0a;
+          border: 1px solid #222;
+          padding: 16px;
+          border-left: 5px solid #ff0000;
         }
         .meta {
           display: flex;
           justify-content: space-between;
-          font-size: 0.7rem;
-          color: #0f0;
+          font-size: 0.75rem;
+          color: #44ff44;
           margin-bottom: 10px;
         }
         .intel-title {
-          font-size: 0.95rem;
+          font-size: 1rem;
           margin: 0 0 12px 0;
           line-height: 1.4;
+          color: #e0e0e0;
         }
         .link {
-          color: #f00;
-          font-size: 0.7rem;
+          color: #ff4444;
+          font-size: 0.75rem;
           text-decoration: none;
           font-weight: bold;
-          border-bottom: 1px solid #300;
+          border-bottom: 1px solid #400000;
         }
         .loading {
           height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #f00;
-          font-size: 0.9rem;
+          color: #ff4444;
+          font-size: 1rem;
         }
         .footer {
-          font-size: 0.6rem;
-          color: #333;
+          font-size: 0.65rem;
+          color: #444;
           text-align: center;
-          margin-top: 20px;
-          line-height: 1.4;
+          margin-top: 25px;
+          line-height: 1.5;
         }
         .disclaimer {
-          color: #555;
+          color: #666;
           font-style: italic;
         }
       `}</style>
