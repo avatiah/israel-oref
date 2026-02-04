@@ -40,7 +40,6 @@ export default function MadadTerminal() {
           </div>
           <div className="gauge">
             <div className="gauge-body">
-              {/* Только внешний контур */}
               <div className="gauge-arc"></div>
               <div className="gauge-center"></div>
               <div
@@ -123,35 +122,33 @@ export default function MadadTerminal() {
           gap: 20px;
         }
         .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
           border-bottom: 2px solid #f00;
           padding-bottom: 10px;
+          text-align: center;
         }
         .title {
-          font-size: 1.5rem;
+          font-size: 1.6rem;
           font-weight: 900;
-          color: #ffffff;
+          color: #fff;
         }
         .gauges {
           display: flex;
-          justify-content: space-around;
+          justify-content: center;
+          gap: 30px;
           flex-wrap: wrap;
-          gap: 25px;
         }
         .gauge-container {
           text-align: center;
         }
         .gauge-label {
           font-size: 1.1rem;
-          margin-bottom: 4px;
           color: #ffffff;
+          margin-bottom: 6px;
           font-weight: bold;
         }
         .gauge-subtitle {
-          font-size: 0.75rem;
-          color: #aaaaaa;
+          font-size: 0.7rem;
+          color: #888;
           line-height: 1.3;
           margin-bottom: 8px;
         }
@@ -163,75 +160,74 @@ export default function MadadTerminal() {
         .gauge-body {
           width: 180px;
           height: 90px;
-          background: #000000;
+          background: #000;
           border-radius: 180px 180px 0 0;
           position: relative;
           overflow: hidden;
-          border: 2px solid #333333;
+          border: 1px solid #222;
         }
         .gauge-arc {
           position: absolute;
-          inset: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           background: conic-gradient(
             from 180deg at 50% 100%,
             #00ff00 0deg 60deg,
             #ffff00 60deg 120deg,
             #ff0000 120deg 180deg
           );
-          mask: radial-gradient(transparent 45%, black 48%);
-          -webkit-mask: radial-gradient(transparent 45%, black 48%);
-          border-radius: 180px 180px 0 0;
+          mask-image: radial-gradient(circle at 50% 100%, transparent 45%, black 48%);
+          -webkit-mask-image: radial-gradient(circle at 50% 100%, transparent 45%, black 48%);
         }
         .gauge-center {
           position: absolute;
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 28px;
-          height: 28px;
-          background: #000000;
+          width: 30px;
+          height: 30px;
+          background: #000;
           border-radius: 50%;
-          border: 2px solid #555555;
-          z-index: 5;
+          border: 2px solid #444;
+          z-index: 3;
         }
         .gauge-needle {
           position: absolute;
           bottom: 0;
           left: 50%;
-          width: 7px;
+          width: 5px;
           height: 92px;
-          background: linear-gradient(to top, #ff0000, #ff4444);
+          background: #ff0000;
           transform-origin: bottom center;
-          transition: transform 1.5s ease-out;
-          z-index: 6;
-          box-shadow: 0 0 15px #ff0000, 0 0 8px #ff4444;
-          border-radius: 7px 7px 0 0;
+          transition: transform 1.2s ease-out;
+          z-index: 4;
+          box-shadow: 0 0 10px #ff0000, 0 0 5px #ff4444;
         }
         .gauge-value {
-          margin-top: 12px;
-          font-size: 1.6rem;
+          margin-top: 10px;
+          font-size: 1.5rem;
           font-weight: bold;
           color: #ffffff;
         }
-        .red { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
-        .green { color: #44ff44; text-shadow: 0 0 8px #00ff00; }
         .sub-bar {
           background: #0a0a0a;
-          padding: 12px;
+          padding: 10px;
           font-size: 0.9rem;
-          border: 1px solid #222222;
           text-align: center;
+          border: 1px solid #222;
         }
         .label {
           font-size: 0.75rem;
-          color: #555555;
+          color: #555;
           letter-spacing: 1.5px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
         .intel-card {
           background: #0a0a0a;
-          border: 1px solid #222222;
-          padding: 16px;
+          border: 1px solid #222;
+          padding: 14px;
           border-left: 5px solid #ff0000;
         }
         .meta {
@@ -239,11 +235,11 @@ export default function MadadTerminal() {
           justify-content: space-between;
           font-size: 0.75rem;
           color: #44ff44;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
         .intel-title {
           font-size: 1rem;
-          margin: 0 0 12px 0;
+          margin: 0 0 10px 0;
           line-height: 1.4;
           color: #e0e0e0;
         }
@@ -252,7 +248,6 @@ export default function MadadTerminal() {
           font-size: 0.75rem;
           text-decoration: none;
           font-weight: bold;
-          border-bottom: 1px solid #400000;
         }
         .loading {
           height: 100vh;
@@ -264,13 +259,13 @@ export default function MadadTerminal() {
         }
         .footer {
           font-size: 0.65rem;
-          color: #555555;
+          color: #555;
           text-align: center;
-          margin-top: 25px;
+          margin-top: 20px;
           line-height: 1.5;
         }
         .disclaimer {
-          color: #666666;
+          color: #666;
           font-style: italic;
         }
       `}</style>
