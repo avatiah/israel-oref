@@ -115,119 +115,125 @@ export default function MadadTerminal() {
           padding: 15px;
         }
         .container {
-          max-width: 600px;
+          max-width: 700px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 25px;
         }
         .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           border-bottom: 2px solid #f00;
           padding-bottom: 10px;
-          text-align: center;
         }
         .title {
           font-size: 1.6rem;
           font-weight: 900;
-          color: #fff;
+          color: #ffffff;
         }
         .gauges {
           display: flex;
-          justify-content: center;
-          gap: 30px;
+          justify-content: space-around;
           flex-wrap: wrap;
+          gap: 30px;
         }
         .gauge-container {
           text-align: center;
         }
         .gauge-label {
           font-size: 1.1rem;
+          margin-bottom: 4px;
           color: #ffffff;
-          margin-bottom: 6px;
           font-weight: bold;
         }
         .gauge-subtitle {
-          font-size: 0.7rem;
-          color: #888;
+          font-size: 0.75rem;
+          color: #aaaaaa;
           line-height: 1.3;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
         .gauge {
           position: relative;
-          width: 180px;
-          height: 100px;
+          width: 220px;
+          height: 120px;
         }
         .gauge-body {
-          width: 180px;
-          height: 90px;
-          background: #000;
-          border-radius: 180px 180px 0 0;
+          width: 220px;
+          height: 110px;
+          background: #000000;
+          border-radius: 220px 220px 0 0;
           position: relative;
           overflow: hidden;
-          border: 1px solid #222;
+          border: 1px solid #222222;
         }
         .gauge-arc {
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          inset: 0;
           background: conic-gradient(
             from 180deg at 50% 100%,
             #00ff00 0deg 60deg,
             #ffff00 60deg 120deg,
             #ff0000 120deg 180deg
           );
-          mask-image: radial-gradient(circle at 50% 100%, transparent 45%, black 48%);
-          -webkit-mask-image: radial-gradient(circle at 50% 100%, transparent 45%, black 48%);
+          mask: radial-gradient(circle at 50% 100%, transparent 48%, black 50%);
+          -webkit-mask: radial-gradient(circle at 50% 100%, transparent 48%, black 50%);
+          border-radius: 220px 220px 0 0;
         }
         .gauge-center {
           position: absolute;
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 30px;
-          height: 30px;
-          background: #000;
+          width: 32px;
+          height: 32px;
+          background: #000000;
           border-radius: 50%;
-          border: 2px solid #444;
-          z-index: 3;
+          border: 2px solid #444444;
+          z-index: 5;
         }
         .gauge-needle {
           position: absolute;
           bottom: 0;
           left: 50%;
           width: 5px;
-          height: 92px;
-          background: #ff0000;
+          height: 110px;
+          background: #ffffff;
           transform-origin: bottom center;
-          transition: transform 1.2s ease-out;
-          z-index: 4;
-          box-shadow: 0 0 10px #ff0000, 0 0 5px #ff4444;
+          transition: transform 1.5s ease-out;
+          z-index: 10;
+          box-shadow: 
+            0 0 12px rgba(255,255,255,0.8),
+            0 0 6px rgba(0,0,0,0.9);
+          border: 1px solid #000000;
+          border-radius: 5px 5px 0 0;
         }
         .gauge-value {
-          margin-top: 10px;
+          margin-top: 12px;
           font-size: 1.5rem;
           font-weight: bold;
           color: #ffffff;
         }
+        .red { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
+        .green { color: #44ff44; text-shadow: 0 0 8px #00ff00; }
         .sub-bar {
           background: #0a0a0a;
-          padding: 10px;
+          padding: 12px;
           font-size: 0.9rem;
+          border: 1px solid #222222;
           text-align: center;
-          border: 1px solid #222;
         }
         .label {
           font-size: 0.75rem;
-          color: #555;
+          color: #555555;
           letter-spacing: 1.5px;
-          margin-bottom: 10px;
+          margin-bottom: 12px;
         }
         .intel-card {
           background: #0a0a0a;
-          border: 1px solid #222;
-          padding: 14px;
+          border: 1px solid #222222;
+          padding: 16px;
           border-left: 5px solid #ff0000;
         }
         .meta {
@@ -235,11 +241,11 @@ export default function MadadTerminal() {
           justify-content: space-between;
           font-size: 0.75rem;
           color: #44ff44;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
         .intel-title {
           font-size: 1rem;
-          margin: 0 0 10px 0;
+          margin: 0 0 12px 0;
           line-height: 1.4;
           color: #e0e0e0;
         }
@@ -248,6 +254,7 @@ export default function MadadTerminal() {
           font-size: 0.75rem;
           text-decoration: none;
           font-weight: bold;
+          border-bottom: 1px solid #400000;
         }
         .loading {
           height: 100vh;
@@ -259,13 +266,13 @@ export default function MadadTerminal() {
         }
         .footer {
           font-size: 0.65rem;
-          color: #555;
+          color: #555555;
           text-align: center;
-          margin-top: 20px;
+          margin-top: 30px;
           line-height: 1.5;
         }
         .disclaimer {
-          color: #666;
+          color: #666666;
           font-style: italic;
         }
       `}</style>
