@@ -40,6 +40,7 @@ export default function MadadTerminal() {
           </div>
           <div className="gauge">
             <div className="gauge-body">
+              {/* Только внешний контур */}
               <div className="gauge-arc"></div>
               <div className="gauge-center"></div>
               <div
@@ -97,7 +98,7 @@ export default function MadadTerminal() {
       </main>
 
       <footer className="footer">
-        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD<br />
+        LAST_SYNC: {new Date(data.timestamp).toLocaleString()}<br />
         Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.<br />
         <span className="disclaimer">
           DISCLAIMER: This is an automated aggregation of open-source expert analyses. 
@@ -131,13 +132,13 @@ export default function MadadTerminal() {
         .title {
           font-size: 1.5rem;
           font-weight: 900;
-          color: #fff;
+          color: #ffffff;
         }
         .gauges {
           display: flex;
           justify-content: space-around;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 25px;
         }
         .gauge-container {
           text-align: center;
@@ -162,23 +163,23 @@ export default function MadadTerminal() {
         .gauge-body {
           width: 180px;
           height: 90px;
-          background: #0f0f0f;
+          background: #000000;
           border-radius: 180px 180px 0 0;
           position: relative;
           overflow: hidden;
-          border: 1px solid #333;
+          border: 2px solid #333333;
         }
         .gauge-arc {
           position: absolute;
           inset: 0;
           background: conic-gradient(
             from 180deg at 50% 100%,
-            #0f0 0deg 60deg,    /* green */
-            #ff0 60deg 120deg,  /* yellow */
-            #f00 120deg 180deg  /* red */
+            #00ff00 0deg 60deg,
+            #ffff00 60deg 120deg,
+            #ff0000 120deg 180deg
           );
-          mask: radial-gradient(transparent 38%, black 40%);
-          -webkit-mask: radial-gradient(transparent 38%, black 40%);
+          mask: radial-gradient(transparent 45%, black 48%);
+          -webkit-mask: radial-gradient(transparent 45%, black 48%);
           border-radius: 180px 180px 0 0;
         }
         .gauge-center {
@@ -186,29 +187,29 @@ export default function MadadTerminal() {
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 26px;
-          height: 26px;
-          background: #111;
+          width: 28px;
+          height: 28px;
+          background: #000000;
           border-radius: 50%;
-          border: 3px solid #555;
-          z-index: 3;
+          border: 2px solid #555555;
+          z-index: 5;
         }
         .gauge-needle {
           position: absolute;
           bottom: 0;
           left: 50%;
-          width: 6px;
-          height: 88px;
-          background: #ff0000;
+          width: 7px;
+          height: 92px;
+          background: linear-gradient(to top, #ff0000, #ff4444);
           transform-origin: bottom center;
-          transition: transform 1.3s ease-out;
-          z-index: 4;
-          box-shadow: 0 0 12px #ff0000, 0 0 6px #ff4444;
-          border-radius: 6px 6px 0 0;
+          transition: transform 1.5s ease-out;
+          z-index: 6;
+          box-shadow: 0 0 15px #ff0000, 0 0 8px #ff4444;
+          border-radius: 7px 7px 0 0;
         }
         .gauge-value {
-          margin-top: 10px;
-          font-size: 1.5rem;
+          margin-top: 12px;
+          font-size: 1.6rem;
           font-weight: bold;
           color: #ffffff;
         }
@@ -218,18 +219,18 @@ export default function MadadTerminal() {
           background: #0a0a0a;
           padding: 12px;
           font-size: 0.9rem;
-          border: 1px solid #222;
+          border: 1px solid #222222;
           text-align: center;
         }
         .label {
           font-size: 0.75rem;
-          color: #555;
+          color: #555555;
           letter-spacing: 1.5px;
           margin-bottom: 12px;
         }
         .intel-card {
           background: #0a0a0a;
-          border: 1px solid #222;
+          border: 1px solid #222222;
           padding: 16px;
           border-left: 5px solid #ff0000;
         }
@@ -263,13 +264,13 @@ export default function MadadTerminal() {
         }
         .footer {
           font-size: 0.65rem;
-          color: #444;
+          color: #555555;
           text-align: center;
           margin-top: 25px;
           line-height: 1.5;
         }
         .disclaimer {
-          color: #666;
+          color: #666666;
           font-style: italic;
         }
       `}</style>
