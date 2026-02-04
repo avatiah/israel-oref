@@ -21,7 +21,6 @@ export default function MadadTerminal() {
 
   if (!data) return <div className="loading">RE-INITIALIZING_SYSTEM_V84...</div>;
 
-  // Simple function to convert value to rotation angle (0-180 degrees for half-circle gauge)
   const getNeedleRotation = (value) => {
     return (value / 100) * 180;
   };
@@ -35,9 +34,14 @@ export default function MadadTerminal() {
       <div className="gauges">
         <div className="gauge-container">
           <div className="gauge-label">TOTAL RISK ISRAEL</div>
+          <div className="gauge-value-subtitle">
+            Current assessment (real-time aggregation)<br/>
+            24–48 hour outlook
+          </div>
           <div className="gauge">
             <div className="gauge-body">
-              <div className="gauge-fill" style={{ background: 'conic-gradient(#0f0 0deg 60deg, #ff0 60deg 120deg, #f00 120deg 180deg)' }}></div>
+              {/* Только дуга окрашена */}
+              <div className="gauge-arc"></div>
               <div className="gauge-center"></div>
               <div
                 className="gauge-needle"
@@ -50,9 +54,13 @@ export default function MadadTerminal() {
 
         <div className="gauge-container">
           <div className="gauge-label">US-IRAN STRIKE PROBABILITY</div>
+          <div className="gauge-value-subtitle">
+            Current assessment (real-time aggregation)<br/>
+            24–48 hour outlook
+          </div>
           <div className="gauge">
             <div className="gauge-body">
-              <div className="gauge-fill" style={{ background: 'conic-gradient(#0f0 0deg 60deg, #ff0 60deg 120deg, #f00 120deg 180deg)' }}></div>
+              <div className="gauge-arc"></div>
               <div className="gauge-center"></div>
               <div
                 className="gauge-needle"
@@ -90,7 +98,13 @@ export default function MadadTerminal() {
       </main>
 
       <footer className="footer">
-        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD // Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.
+        LAST_SYNC: {new Date(data.timestamp).toLocaleString()} // NODE_ASHDOD<br/>
+        Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.<br/>
+        <span className="disclaimer">
+          DISCLAIMER: This is an automated aggregation of open-source expert analyses. 
+          It is not official intelligence, not a prediction, and carries no liability. 
+          Use for informational purposes only.
+        </span>
       </footer>
 
       <style jsx global>{`
@@ -129,63 +143,79 @@ export default function MadadTerminal() {
           text-align: center;
         }
         .gauge-label {
-          font-size: 0.9rem;
-          margin-bottom: 8px;
-          color: #888;
+          font-size: 1rem;
+          margin-bottom: 4px;
+          color: #ccc;
+        }
+        .gauge-value-subtitle {
+          font-size: 0.7rem;
+          color: #666;
+          line-height: 1.2;
+          margin-bottom: 6px;
         }
         .gauge {
           position: relative;
-          width: 140px;
-          height: 80px;
+          width: 160px;
+          height: 90px;
         }
         .gauge-body {
-          width: 140px;
-          height: 70px;
+          width: 160px;
+          height: 80px;
           background: #111;
-          border-radius: 140px 140px 0 0;
-          overflow: hidden;
+          border-radius: 160px 160px 0 0;
           position: relative;
+          overflow: hidden;
+          border: 1px solid #333;
         }
-        .gauge-fill {
+        .gauge-arc {
           position: absolute;
           top: 0;
           left: 0;
           width: 100%;
           height: 100%;
-          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-          transform: rotate(180deg);
+          background: conic-gradient(
+            from 180deg at 50% 100%,
+            #0f0 0deg 60deg,
+            #ff0 60deg 120deg,
+            #f00 120deg 180deg
+          );
+          border-radius: 160px 160px 0 0;
+          mask: radial-gradient(transparent 40%, black 42%);
+          -webkit-mask: radial-gradient(transparent 40%, black 42%);
         }
         .gauge-center {
           position: absolute;
           bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 20px;
-          height: 20px;
-          background: #222;
+          width: 24px;
+          height: 24px;
+          background: #000;
           border-radius: 50%;
-          border: 3px solid #444;
-          z-index: 2;
+          border: 3px solid #555;
+          z-index: 3;
         }
         .gauge-needle {
           position: absolute;
           bottom: 0;
           left: 50%;
-          width: 4px;
-          height: 70px;
-          background: #f00;
+          width: 5px;
+          height: 78px;
+          background: linear-gradient(to top, #f00, #ff5555);
           transform-origin: bottom center;
-          transition: transform 1s ease-out;
-          z-index: 3;
-          border-radius: 4px 4px 0 0;
+          transition: transform 1.2s ease-out;
+          z-index: 4;
+          box-shadow: 0 0 8px #f00;
+          border-radius: 5px 5px 0 0;
         }
         .gauge-value {
           margin-top: 8px;
-          font-size: 1.2rem;
+          font-size: 1.4rem;
           font-weight: bold;
+          color: #fff;
         }
         .red { color: #f00; text-shadow: 0 0 10px #f00; }
-        .green { color: #0f0; }
+        .green { color: #0f0; text-shadow: 0 0 8px #0f0; }
         .sub-bar {
           background: #0a0a0a;
           padding: 10px;
@@ -234,9 +264,14 @@ export default function MadadTerminal() {
         }
         .footer {
           font-size: 0.6rem;
-          color: #222;
+          color: #333;
           text-align: center;
           margin-top: 20px;
+          line-height: 1.4;
+        }
+        .disclaimer {
+          color: #555;
+          font-style: italic;
         }
       `}</style>
     </div>
