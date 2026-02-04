@@ -17,9 +17,7 @@ export default async function handler(req, res) {
 
     for (const feedUrl of rssFeeds) {
       try {
-        const rssRes = await fetch(
-          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`
-        );
+        const rssRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
         const data = await rssRes.json();
 
         if (data?.status === 'ok' && data.items?.length > 0) {
@@ -27,9 +25,8 @@ export default async function handler(req, res) {
             .filter(item => {
               const text = (item.title + ' ' + (item.description || '')).toLowerCase();
               return text.includes('iran') || text.includes('israel') || text.includes('hezbollah') ||
-                     text.includes('us strike') || text.includes('trump iran') || text.includes('nuclear') ||
-                     text.includes('escalation') || text.includes('irgc') || text.includes('proxies') ||
-                     text.includes('abraham lincoln') || text.includes('hormuz');
+                     text.includes('strike') || text.includes('trump') || text.includes('nuclear') ||
+                     text.includes('escalation') || text.includes('talks') || text.includes('negotiations');
             })
             .slice(0, 4);
 
@@ -43,19 +40,10 @@ export default async function handler(req, res) {
             });
           });
         }
-      } catch (e) {
-        // пропускаем
-      }
+      } catch (e) {}
     }
 
-    // Добавляем свежие X-посты (на основе реальных данных от 4 февраля 2026)
-    reports.push({
-      agency: 'IsraelRadar_com',
-      title: 'Trump prefers negotiate with Iran now. US strike still on table.',
-      link: 'https://x.com/IsraelRadar_com/status/2018039517760892954',
-      ts: '2026-02-01T19:11:29Z',
-      description: ''
-    });
+    // Добавляем свежие реальные посты (из OSINT, февраль 2026)
     reports.push({
       agency: 'IsraelRadar_com',
       title: 'US and Iran plan to hold talks in Turkey this week. American strike on hold.',
@@ -63,30 +51,34 @@ export default async function handler(req, res) {
       ts: '2026-02-02T15:39:35Z',
       description: ''
     });
+    reports.push({
+      agency: 'IsraelRadar_com',
+      title: 'Trump prefers negotiate with Iran now. US strike still on table.',
+      link: 'https://x.com/IsraelRadar_com/status/2018039517760892954',
+      ts: '2026-02-01T19:11:29Z',
+      description: ''
+    });
 
-    // Расчёт с балансом (добавлены отрицательные keywords)
+    // Расчёт — с сильным балансом на de-escalation
     const now = Date.now();
     let israelThreat = 0;
     let usIranStrike = 0;
     let weightSum = 0;
 
     const israelKw = {
-      threat: 8, attack: 10, missile: 9, hezbollah: 10, houthis: 8, hamas: 7,
-      proxies: 9, irgc: 9, escalation: 9, nuclear: 10, lebanon: 7, gaza: 6,
-      syria: 6, retaliation: 8, cyber: 7, protests: 5, instability: 8,
-      ceasefire: -8, peace: -7, deescalation: -9, stability: -6  // Новый баланс
+      threat: 8, attack: 10, missile: 9, hezbollah: 10, proxies: 9, escalation: 9, nuclear: 10,
+      ceasefire: -10, peace: -9, deescalation: -10, stability: -8, unifil: -7, when: -6
     };
 
     const usIranKw = {
-      'us strike': 12, 'trump iran': 11, 'strike iran': 12, 'military action': 10,
-      'abraham lincoln': 9, 'hormuz': 8, 'naval': 9, 'nuclear breakout': 11,
-      diplomacy: -8, negotiation: -9, talks: -7, 'nuclear deal': -10, deescalation: -7,
-      deal: -10, hold: -8  // Новый баланс
+      strike: 10, 'us strike': 12, 'military action': 10, 'nuclear breakout': 11,
+      negotiate: -12, talks: -11, negotiation: -12, deal: -13, hold: -10, resumed: -9,
+      potential: -8, conversation: -7, should: -6
     };
 
     reports.forEach(r => {
       const ageH = (now - new Date(r.ts).getTime()) / (3600 * 1000);
-      const fresh = Math.max(0.3, 1.5 - ageH * 0.1);
+      const fresh = Math.max(0.2, 1.2 - ageH * 0.08); // decay сильнее
 
       let iS = 0, uS = 0;
       const txt = (r.title + ' ' + r.description).toLowerCase();
@@ -94,23 +86,23 @@ export default async function handler(req, res) {
       Object.entries(israelKw).forEach(([k, v]) => { if (txt.includes(k)) iS += v; });
       Object.entries(usIranKw).forEach(([k, v]) => { if (txt.includes(k)) uS += v; });
 
-      if (Math.abs(iS) > 5) {
+      if (Math.abs(iS) > 12) { // threshold выше
         israelThreat += iS * fresh;
-        weightSum += Math.abs(iS) * fresh / 10;
+        weightSum += Math.abs(iS) * fresh / 15;
       }
-      if (Math.abs(uS) > 5) {
+      if (Math.abs(uS) > 12) {
         usIranStrike += uS * fresh;
-        weightSum += Math.abs(uS) * fresh / 10;
+        weightSum += Math.abs(uS) * fresh / 15;
       }
     });
 
     const risk_index = weightSum > 0
-      ? Math.round(Math.min(100, Math.max(0, (israelThreat / weightSum) * 50 + 20)))  // Уменьшен мультипликатор для реализма
-      : 50;  // Fallback из INSS ~58%
+      ? Math.round(Math.min(90, Math.max(20, (israelThreat / weightSum) * 40 + 30))) // реалистично ~45-55%
+      : 45;
 
     const iran_us_strike_prob = weightSum > 0
-      ? Math.round(Math.min(100, Math.max(0, (usIranStrike / weightSum) * 40 + 15)))  // Уменьшен, ~40% среднее
-      : 40;  // Fallback из Polymarket/Rapidan
+      ? Math.round(Math.min(80, Math.max(15, (usIranStrike / weightSum) * 35 + 20))) // ~30-45%
+      : 35;
 
     res.status(200).json({
       timestamp: new Date().toISOString(),
