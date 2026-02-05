@@ -35,20 +35,19 @@ export default function MadadHaOref() {
     return () => clearInterval(timer);
   }, []);
 
-  // Логика проверки активных NOTAM во всех новостных лентах
   const isNotamActive = data?.nodes?.some(node => 
     node.news?.some(n => /NOTAM|Airspace|Closed|Закрытие|FAA/i.test(n.txt))
   );
 
-  if (!data) return <div style={s.loader}>{">"} INITIALIZING_OSINT_MONITOR...</div>;
+  if (!data) return <div style={s.loader}>{">"} RESTORING_FULL_OSINT_SYSTRAY...</div>;
 
   return (
     <div style={s.container}>
       <header style={s.header}>
         <h1 style={s.logo}>MADAD HAOREF</h1>
         <div style={s.statusBlock}>
-          <div style={s.meta}>THREAT_ENGINE_V12.5</div>
-          <div style={s.statusText}>STATUS: <span style={{color: '#0f4'}}>ENCRYPTED_FEED</span></div>
+          <div style={s.meta}>THREAT_ENGINE_V12.6 // FULL_PROPHET_MODE</div>
+          <div style={s.statusText}>STATUS: <span style={{color: '#0f4'}}>LIVE_ENCRYPTED</span></div>
           <div style={s.time}>{new Date(data.timestamp).toLocaleTimeString()} UTC</div>
         </div>
       </header>
@@ -90,17 +89,29 @@ export default function MadadHaOref() {
             </div>
           </div>
         ))}
+
+        {/* СТРАТЕГИЧЕСКИЙ ПРОГНОЗ - ВОССТАНОВЛЕН */}
+        <div style={s.forecastBox}>
+          <h3 style={s.forecastTitle}>⚠️ СТРАТЕГИЧЕСКИЙ ПРОГНОЗ: {data.prediction?.date || '06.02.2026'}</h3>
+          <p style={s.forecastText}>
+            ТЕКУЩИЙ ТРЕК: <strong style={{color:'#ff3e3e'}}>{data.prediction?.status || 'ANALYZING_DIPLOMACY'}</strong>. <br/>
+            При официальном срыве переговоров в Маскате, индекс удара вырастет до <strong>{data.prediction?.impact || '70'}%</strong>. 
+            Это приведет к активации протоколов быстрого реагирования и коррекции всех оборонных узлов.
+          </p>
+        </div>
       </main>
 
       <style jsx global>{`
-        @keyframes blink {
-          0% { opacity: 1; }
-          50% { opacity: 0.3; }
-          100% { opacity: 1; }
-        }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
       `}</style>
 
+      {/* ПРЕДУПРЕЖДЕНИЕ ОБ ОТВЕТСТВЕННОСТИ - ВОССТАНОВЛЕНО */}
       <footer style={s.footer}>
+        <p style={s.disclaimer}>
+          <strong>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:</strong> ДАННЫЙ РЕСУРС ЯВЛЯЕТСЯ АГРЕГАТОРОМ ОТКРЫТЫХ ДАННЫХ (OSINT). 
+          ВСЕ РАСЧЕТЫ ЯВЛЯЮТСЯ ВЕРОЯТНОСТНЫМИ МОДЕЛЯМИ. ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНЫМ ПРИЗЫВОМ К ДЕЙСТВИЮ 
+          ИЛИ ДИРЕКТИВОЙ СЛУЖБ БЕЗОПАСНОСТИ.
+        </p>
         <div style={s.footerMeta}>MADAD HAOREF © 2026 // ADAPTIVE_MONITORING_ACTIVE</div>
       </footer>
     </div>
@@ -115,25 +126,25 @@ const s = {
   meta: { fontSize: '10px', color: '#00cc00' },
   statusText: { fontSize: '11px', margin: '4px 0' },
   time: { fontSize: '10px', color: '#008800' },
-  
   grid: { width: '100%', maxWidth: '650px', display: 'flex', flexDirection: 'column', gap: '20px' },
   card: { border: '1px solid #004400', padding: '20px', background: '#050505' },
   cardLayout: { display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' },
   cardContent: { flex: '1 1 300px' },
-  
   nodeTitle: { fontSize: '13px', color: '#fff', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid #111' },
   newsSection: { display: 'flex', flexDirection: 'column', gap: '6px' },
   newsItem: { fontSize: '12px', color: '#eee', textTransform: 'none', lineHeight: '1.4' },
   newsSrc: { color: '#0f4', fontWeight: 'bold' },
-  
   infoBox: { borderTop: '1px solid #1a1a1a', paddingTop: '15px', marginTop: '15px' },
   infoRow: { display: 'flex', alignItems: 'center' },
   infoLabel: { color: '#0f4', fontSize: '10px', marginRight: '15px' },
   metricsList: { display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' },
   metricItem: { fontSize: '10px', display: 'flex', alignItems: 'center', gap: '5px', color: '#444' },
   dot: { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' },
-
+  forecastBox: { border: '1px solid #600', padding: '20px', background: '#0d0000', textAlign: 'center', marginTop: '10px' },
+  forecastTitle: { fontSize: '14px', color: '#ff3e3e', margin: '0 0 10px 0' },
+  forecastText: { fontSize: '12px', textTransform: 'none', color: '#fff', lineHeight: '1.5' },
   footer: { marginTop: '40px', borderTop: '1px solid #1a1a1a', paddingTop: '20px', textAlign: 'center', width: '100%', maxWidth: '650px' },
+  disclaimer: { fontSize: '9px', color: '#444', textTransform: 'none', textAlign: 'justify', lineHeight: '1.4', marginBottom: '10px' },
   footerMeta: { fontSize: '9px', color: '#004400' },
   loader: { height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#0f4' }
 };
