@@ -1,281 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function MadadTerminal() {
+export default function MadadHaOref() {
   const [data, setData] = useState(null);
 
   const sync = async () => {
     try {
       const r = await fetch('/api/data');
-      const d = await r.json();
-      if (d.reports) setData(d);
-    } catch (e) {
-      console.error("SYNC_LOST", e);
-    }
+      const j = await r.json();
+      if (j && j.nodes) setData(j);
+    } catch (e) { console.warn("SYNC_HOLD"); }
   };
 
-  useEffect(() => {
-    sync();
-    const interval = setInterval(sync, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => { sync(); const i = setInterval(sync, 15000); return () => clearInterval(i); }, []);
 
-  if (!data) return <div className="loading">RE-INITIALIZING_SYSTEM_V84...</div>;
-
-  const getNeedleRotation = (value) => {
-    return (value / 100) * 180 - 90; // -90 чтобы 0% было слева, 100% справа
-  };
+  if (!data) return <div style={s.loader}>{">"} CONNECTING_TO_MADAD_HAOREF_CORE...</div>;
 
   return (
-    <div className="container">
-      <header className="header">
-        <div className="title">MADAD_HAOREF</div>
+    <div style={s.container}>
+      <header style={s.header}>
+        <h1 style={s.logo}>MADAD HAOREF // ТЕРМИНАЛ</h1>
+        <div style={s.time}>{new Date(data.timestamp).toLocaleString()} UTC</div>
       </header>
 
-      <div className="gauges">
-        <div className="gauge-container">
-          <div className="gauge-label">TOTAL RISK ISRAEL</div>
-          <div className="gauge-subtitle">
-            Current assessment (real-time aggregation)<br />
-            24–48 hour outlook
-          </div>
-          <div className="gauge">
-            <div className="gauge-body">
-              <div className="gauge-arc"></div>
-              <div className="gauge-center"></div>
-              <div
-                className="gauge-needle"
-                style={{ transform: `rotate(${getNeedleRotation(data.risk_index)}deg)` }}
-              ></div>
+      <div style={s.grid}>
+        {data.nodes?.map(node => (
+          <div key={node.id} style={s.card}>
+            <div style={s.cardTop}>
+              <span style={s.label}>{node.title}</span>
+              <span style={{...s.val, color: node.value > 60 ? '#f44' : '#0f4'}}>{node.value}%</span>
             </div>
-            <div className="gauge-value">{data.risk_index}%</div>
-          </div>
-        </div>
 
-        <div className="gauge-container">
-          <div className="gauge-label">US-IRAN STRIKE PROBABILITY</div>
-          <div className="gauge-subtitle">
-            Current assessment (real-time aggregation)<br />
-            24–48 hour outlook
-          </div>
-          <div className="gauge">
-            <div className="gauge-body">
-              <div className="gauge-arc"></div>
-              <div className="gauge-center"></div>
-              <div
-                className="gauge-needle"
-                style={{ transform: `rotate(${getNeedleRotation(data.iran_us_strike_prob)}deg)` }}
-              ></div>
+            <div style={s.newsWall}>
+              {node.news?.map((n, i) => (
+                <div key={i} style={s.newsItem}>
+                  <span style={s.src}>[{n.src}]</span> {n.txt}
+                </div>
+              ))}
             </div>
-            <div className="gauge-value">{data.iran_us_strike_prob}%</div>
+            <div style={s.method}>Методология: {node.method}</div>
           </div>
-        </div>
+        ))}
       </div>
 
-      <div className="sub-bar">
-        <span>STATUS: <b className="green">DATA_STREAM_SYNCED</b></span>
+      <div style={s.forecast}>
+        <h3 style={s.fTitle}>⚠️ СТРАТЕГИЧЕСКИЙ ПРОГНОЗ: {data.prediction?.date}</h3>
+        <p style={s.fText}>
+          ВЕКТОР: <strong>{data.prediction?.status}</strong>. <br/>
+          Срыв переговоров в Омане поднимет риск удара США до <strong>{data.prediction?.impact}%</strong>.
+        </p>
       </div>
 
-      <main className="content">
-        <div className="label">LATEST VERIFIED INTEL (open-source expert analyses)</div>
-
-        {data.reports?.length > 0 ? (
-          data.reports.map((item, i) => (
-            <article key={i} className="intel-card">
-              <div className="meta">
-                <span className="src">{item.agency.toUpperCase()}</span>
-                <span className="time">{new Date(item.ts).toLocaleTimeString()}</span>
-              </div>
-              <h3 className="intel-title">{item.title}</h3>
-              <a href={item.link} target="_blank" rel="noreferrer" className="link">
-                OPEN SOURCE REPORT →
-              </a>
-            </article>
-          ))
-        ) : (
-          <div className="red">FATAL: NO_INCOMING_DATA</div>
-        )}
-      </main>
-
-      <footer className="footer">
-        LAST_SYNC: {new Date(data.timestamp).toLocaleString()}<br />
-        Sources: ISW, INSS, Atlantic Council, IsraelRadar_com etc.<br />
-        <span className="disclaimer">
-          DISCLAIMER: This is an automated aggregation of open-source expert analyses. 
-          It is not official intelligence, not a prediction, and carries no liability. 
-          Use for informational purposes only.
-        </span>
+      <footer style={s.footer}>
+        ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ: ДАННЫЕ ЯВЛЯЮТСЯ ВЕРОЯТНОСТНОЙ МОДЕЛЬЮ НА ОСНОВЕ ОТКРЫТЫХ ИСТОЧНИКОВ (OSINT). 
+        НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ РЕКОМЕНДАЦИЕЙ. MADAD HAOREF © 2026.
       </footer>
-
-      <style jsx global>{`
-        body {
-          background: #000;
-          color: #e0e0e0;
-          font-family: 'Consolas', 'Courier New', monospace;
-          margin: 0;
-          padding: 15px;
-        }
-        .container {
-          max-width: 700px;
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
-        .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid #f00;
-          padding-bottom: 10px;
-        }
-        .title {
-          font-size: 1.6rem;
-          font-weight: 900;
-          color: #ffffff;
-        }
-        .gauges {
-          display: flex;
-          justify-content: space-around;
-          flex-wrap: wrap;
-          gap: 30px;
-        }
-        .gauge-container {
-          text-align: center;
-        }
-        .gauge-label {
-          font-size: 1.1rem;
-          margin-bottom: 4px;
-          color: #ffffff;
-          font-weight: bold;
-        }
-        .gauge-subtitle {
-          font-size: 0.75rem;
-          color: #aaaaaa;
-          line-height: 1.3;
-          margin-bottom: 6px;
-        }
-        .gauge {
-          position: relative;
-          width: 220px;
-          height: 120px;
-        }
-        .gauge-body {
-          width: 220px;
-          height: 110px;
-          background: #000000;
-          border-radius: 220px 220px 0 0;
-          position: relative;
-          overflow: hidden;
-          border: 1px solid #222222;
-        }
-        .gauge-arc {
-          position: absolute;
-          inset: -2px; /* тонкий внешний контур */
-          background: conic-gradient(
-            from 180deg at 50% 100%,
-            #00ff00 0deg 60deg,
-            #ffff00 60deg 120deg,
-            #ff0000 120deg 180deg
-          );
-          mask: radial-gradient(circle at 50% 100%, transparent 46%, black 47%);
-          -webkit-mask: radial-gradient(circle at 50% 100%, transparent 46%, black 47%);
-          border-radius: 220px 220px 0 0;
-        }
-        .gauge-center {
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 30px;
-          height: 30px;
-          background: #000000;
-          border-radius: 50%;
-          border: 1px solid #444444;
-          z-index: 5;
-        }
-        .gauge-needle {
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          width: 4px;
-          height: 115px;
-          background: #ffffff;
-          transform-origin: bottom center;
-          transition: transform 1.5s ease-out;
-          z-index: 10;
-          box-shadow: 
-            0 0 10px rgba(255,255,255,0.9),
-            0 0 5px rgba(0,0,0,0.8);
-          border: 1px solid #000000;
-          border-radius: 4px 4px 0 0;
-        }
-        .gauge-value {
-          margin-top: 12px;
-          font-size: 1.5rem;
-          font-weight: bold;
-          color: #ffffff;
-        }
-        .red { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
-        .green { color: #44ff44; text-shadow: 0 0 8px #00ff00; }
-        .sub-bar {
-          background: #0a0a0a;
-          padding: 12px;
-          font-size: 0.9rem;
-          border: 1px solid #222222;
-          text-align: center;
-        }
-        .label {
-          font-size: 0.75rem;
-          color: #555555;
-          letter-spacing: 1.5px;
-          margin-bottom: 12px;
-        }
-        .intel-card {
-          background: #0a0a0a;
-          border: 1px solid #222222;
-          padding: 16px;
-          border-left: 5px solid #ff0000;
-        }
-        .meta {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.75rem;
-          color: #44ff44;
-          margin-bottom: 10px;
-        }
-        .intel-title {
-          font-size: 1rem;
-          margin: 0 0 12px 0;
-          line-height: 1.4;
-          color: #e0e0e0;
-        }
-        .link {
-          color: #ff4444;
-          font-size: 0.75rem;
-          text-decoration: none;
-          font-weight: bold;
-          border-bottom: 1px solid #400000;
-        }
-        .loading {
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #ff4444;
-          font-size: 1rem;
-        }
-        .footer {
-          font-size: 0.65rem;
-          color: #555555;
-          text-align: center;
-          margin-top: 30px;
-          line-height: 1.5;
-        }
-        .disclaimer {
-          color: #666666;
-          font-style: italic;
-        }
-      `}</style>
     </div>
   );
 }
+
+const s = {
+  container: { background: '#000', color: '#0f4', fontFamily: 'monospace', minHeight: '100vh', padding: '20px', textTransform: 'uppercase' },
+  header: { display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1a1a1a', paddingBottom: '10px', marginBottom: '25px' },
+  logo: { fontSize: '20px', letterSpacing: '2px' },
+  time: { fontSize: '10px', color: '#444' },
+  grid: { maxWidth: '700px', margin: '0 auto' },
+  card: { border: '1px solid #222', padding: '15px', background: '#050505', marginBottom: '15px' },
+  cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
+  label: { fontSize: '11px', color: '#888' },
+  val: { fontSize: '42px', fontWeight: 'bold' },
+  newsWall: { borderLeft: '2px solid #111', paddingLeft: '12px', marginBottom: '10px' },
+  newsItem: { fontSize: '11px', color: '#ddd', textTransform: 'none', marginBottom: '6px', lineHeight: '1.4' },
+  src: { color: '#0f4', fontWeight: 'bold' },
+  method: { fontSize: '8px', color: '#222', textTransform: 'none' },
+  forecast: { maxWidth: '700px', margin: '20px auto', border: '1px solid #500', padding: '15px', background: '#100' },
+  fTitle: { fontSize: '14px', color: '#f44', margin: '0 0 10px 0' },
+  fText: { fontSize: '12px', color: '#eee', textTransform: 'none' },
+  footer: { fontSize: '9px', color: '#222', textAlign: 'justify', maxWidth: '700px', margin: '40px auto 0', lineHeight: '1.3' },
+  loader: { height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', color: '#0f4' }
+};
