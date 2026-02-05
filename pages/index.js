@@ -25,7 +25,18 @@ export default function MadadHaOref() {
     try {
       const res = await fetch('/api/data');
       const json = await res.json();
-      if (json?.nodes) { lastValidData.current = json; setData(json); }
+      if (json?.nodes) { 
+        // Логика перевода заголовков на лету
+        const translatedNodes = json.nodes.map(node => {
+          let newTitle = node.title;
+          if (node.id === "US") newTitle = "ВЕРОЯТНОСТЬ УДАРА США ПО ИРАНУ";
+          if (node.id === "IL") newTitle = "ИНДЕКС БЕЗОПАСНОСТИ ИЗРАИЛЯ";
+          return { ...node, title: newTitle };
+        });
+        const translatedData = { ...json, nodes: translatedNodes };
+        lastValidData.current = translatedData; 
+        setData(translatedData); 
+      }
     } catch (e) { if (lastValidData.current) setData(lastValidData.current); }
   };
 
@@ -39,15 +50,15 @@ export default function MadadHaOref() {
     node.news?.some(n => /NOTAM|Airspace|Closed|Закрытие|FAA/i.test(n.txt))
   );
 
-  if (!data) return <div style={s.loader}>{">"} RESTORING_FULL_OSINT_SYSTRAY...</div>;
+  if (!data) return <div style={s.loader}>{">"} ИНИЦИАЛИЗАЦИЯ MADAD_HAOREF...</div>;
 
   return (
     <div style={s.container}>
       <header style={s.header}>
         <h1 style={s.logo}>MADAD HAOREF</h1>
         <div style={s.statusBlock}>
-          <div style={s.meta}>THREAT_ENGINE_V12.6 // FULL_PROPHET_MODE</div>
-          <div style={s.statusText}>STATUS: <span style={{color: '#0f4'}}>LIVE_ENCRYPTED</span></div>
+          <div style={s.meta}>ДВИЖОК УГРОЗ V12.7 // ПОЛНЫЙ МОНИТОРИНГ</div>
+          <div style={s.statusText}>СТАТУС: <span style={{color: '#0f4'}}>АКТИВЕН_ЗАШИФРОВАН</span></div>
           <div style={s.time}>{new Date(data.timestamp).toLocaleTimeString()} UTC</div>
         </div>
       </header>
@@ -72,7 +83,7 @@ export default function MadadHaOref() {
             <div style={s.infoBox}>
               <div style={s.infoRow}>
                 <div style={s.metricsList}>
-                  <span style={s.infoLabel}>METRICS:</span>
+                  <span style={s.infoLabel}>МЕТРИКИ:</span>
                   <span style={{...s.metricItem, color: isNotamActive ? '#fff' : '#444'}}>
                     <span style={{
                       ...s.dot, 
@@ -81,8 +92,8 @@ export default function MadadHaOref() {
                     }} />
                     NOTAMs
                   </span>
-                  <span style={s.metricItem}>DIPLOMACY</span>
-                  <span style={s.metricItem}>ENERGY</span>
+                  <span style={s.metricItem}>ДИПЛОМАТИЯ</span>
+                  <span style={s.metricItem}>ЭНЕРГИЯ</span>
                   <span style={s.metricItem}>USD/ILS</span>
                 </div>
               </div>
@@ -90,13 +101,13 @@ export default function MadadHaOref() {
           </div>
         ))}
 
-        {/* СТРАТЕГИЧЕСКИЙ ПРОГНОЗ - ВОССТАНОВЛЕН */}
         <div style={s.forecastBox}>
           <h3 style={s.forecastTitle}>⚠️ СТРАТЕГИЧЕСКИЙ ПРОГНОЗ: {data.prediction?.date || '06.02.2026'}</h3>
           <p style={s.forecastText}>
-            ТЕКУЩИЙ ТРЕК: <strong style={{color:'#ff3e3e'}}>{data.prediction?.status || 'ANALYZING_DIPLOMACY'}</strong>. <br/>
-            При официальном срыве переговоров в Маскате, индекс удара вырастет до <strong>{data.prediction?.impact || '70'}%</strong>. 
-            Это приведет к активации протоколов быстрого реагирования и коррекции всех оборонных узлов.
+            ТЕКУЩИЙ ТРЕК: <strong style={{color:'#ff3e3e'}}>
+              {data.prediction?.status === "DIPLOMACY_FOCUS" ? "ФОКУС НА ДИПЛОМАТИИ" : data.prediction?.status || 'АНАЛИЗ_ДАННЫХ'}
+            </strong>. <br/>
+            При официальном срыве переговоров в Маскате, риск удара вырастет до <strong>{data.prediction?.impact || '70'}%</strong>. 
           </p>
         </div>
       </main>
@@ -105,12 +116,10 @@ export default function MadadHaOref() {
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
       `}</style>
 
-      {/* ПРЕДУПРЕЖДЕНИЕ ОБ ОТВЕТСТВЕННОСТИ - ВОССТАНОВЛЕНО */}
       <footer style={s.footer}>
         <p style={s.disclaimer}>
           <strong>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:</strong> ДАННЫЙ РЕСУРС ЯВЛЯЕТСЯ АГРЕГАТОРОМ ОТКРЫТЫХ ДАННЫХ (OSINT). 
-          ВСЕ РАСЧЕТЫ ЯВЛЯЮТСЯ ВЕРОЯТНОСТНЫМИ МОДЕЛЯМИ. ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНЫМ ПРИЗЫВОМ К ДЕЙСТВИЮ 
-          ИЛИ ДИРЕКТИВОЙ СЛУЖБ БЕЗОПАСНОСТИ.
+          ВСЕ РАСЧЕТЫ ЯВЛЯЮТСЯ ВЕРОЯТНОСТНЫМИ МОДЕЛЯМИ. ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ ДИРЕКТИВОЙ СЛУЖБ БЕЗОПАСНОСТИ.
         </p>
         <div style={s.footerMeta}>MADAD HAOREF © 2026 // ADAPTIVE_MONITORING_ACTIVE</div>
       </footer>
