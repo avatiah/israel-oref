@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const Gauge = ({ value, label, color }) => {
+const Gauge = ({ value, color }) => {
   const radius = 40;
   const stroke = 8;
   const circumference = Math.PI * radius;
@@ -8,9 +8,9 @@ const Gauge = ({ value, label, color }) => {
 
   return (
     <div style={s.gaugeContainer}>
-      <svg width="120" height="70" viewBox="0 0 100 60">
+      <svg width="120" height="70" viewBox="0 0 100 60" style={{ shapeRendering: 'geometricPrecision' }}>
         <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#111" strokeWidth={stroke} strokeLinecap="round" />
-        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease-out' }} />
+        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
         <text x="50" y="45" textAnchor="middle" fill="#fff" fontSize="14" fontWeight="bold" fontFamily="monospace">{value}%</text>
       </svg>
     </div>
@@ -23,21 +23,16 @@ export default function MadadHaOref() {
 
   const fetchIntel = async () => {
     try {
-      const res = await fetch('/api/data');
+      // Ускоренный запрос с приоритетом
+      const res = await fetch('/api/data', { priority: 'high' });
       const json = await res.json();
-      if (json?.nodes) { 
-        // Логика перевода заголовков на лету
-        const translatedNodes = json.nodes.map(node => {
-          let newTitle = node.title;
-          if (node.id === "US") newTitle = "ВЕРОЯТНОСТЬ УДАРА США ПО ИРАНУ";
-          if (node.id === "IL") newTitle = "ИНДЕКС БЕЗОПАСНОСТИ ИЗРАИЛЯ";
-          return { ...node, title: newTitle };
-        });
-        const translatedData = { ...json, nodes: translatedNodes };
-        lastValidData.current = translatedData; 
-        setData(translatedData); 
+      if (json?.nodes) {
+        lastValidData.current = json;
+        setData(json);
       }
-    } catch (e) { if (lastValidData.current) setData(lastValidData.current); }
+    } catch (e) {
+      if (lastValidData.current) setData(lastValidData.current);
+    }
   };
 
   useEffect(() => {
@@ -50,14 +45,14 @@ export default function MadadHaOref() {
     node.news?.some(n => /NOTAM|Airspace|Closed|Закрытие|FAA/i.test(n.txt))
   );
 
-  if (!data) return <div style={s.loader}>{">"} ИНИЦИАЛИЗАЦИЯ MADAD_HAOREF...</div>;
+  if (!data) return <div style={s.loader}>{">"} УСТАНОВКА СОЕДИНЕНИЯ С MADAD_HAOREF...</div>;
 
   return (
     <div style={s.container}>
       <header style={s.header}>
         <h1 style={s.logo}>MADAD HAOREF</h1>
         <div style={s.statusBlock}>
-          <div style={s.meta}>ДВИЖОК УГРОЗ V12.7 // ПОЛНЫЙ МОНИТОРИНГ</div>
+          <div style={s.meta}>ДВИЖОК УГРОЗ V12.8 // ОПТИМИЗИРОВАН</div>
           <div style={s.statusText}>СТАТУС: <span style={{color: '#0f4'}}>АКТИВЕН_ЗАШИФРОВАН</span></div>
           <div style={s.time}>{new Date(data.timestamp).toLocaleTimeString()} UTC</div>
         </div>
@@ -97,32 +92,33 @@ export default function MadadHaOref() {
                   <span style={s.metricItem}>USD/ILS</span>
                 </div>
               </div>
+              <div style={s.methodRow}>МЕТОД: {node.method}</div>
             </div>
           </div>
         ))}
 
         <div style={s.forecastBox}>
-          <h3 style={s.forecastTitle}>⚠️ СТРАТЕГИЧЕСКИЙ ПРОГНОЗ: {data.prediction?.date || '06.02.2026'}</h3>
+          <h3 style={s.forecastTitle}>⚠️ СТРАТЕГИЧЕСКИЙ ПРОГНОЗ: {data.prediction?.date}</h3>
           <p style={s.forecastText}>
             ТЕКУЩИЙ ТРЕК: <strong style={{color:'#ff3e3e'}}>
-              {data.prediction?.status === "DIPLOMACY_FOCUS" ? "ФОКУС НА ДИПЛОМАТИИ" : data.prediction?.status || 'АНАЛИЗ_ДАННЫХ'}
+              {data.prediction?.status === "DIPLOMACY_FOCUS" ? "ФОКУС НА ДИПЛОМАТИИ" : data.prediction?.status}
             </strong>. <br/>
-            При официальном срыве переговоров в Маскате, риск удара вырастет до <strong>{data.prediction?.impact || '70'}%</strong>. 
+            РИСК УДАРА США ПРИ СРЫВЕ ПЕРЕГОВОРОВ: <strong>{data.prediction?.impact}%</strong>. 
           </p>
         </div>
       </main>
 
-      <style jsx global>{`
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-      `}</style>
-
       <footer style={s.footer}>
         <p style={s.disclaimer}>
           <strong>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:</strong> ДАННЫЙ РЕСУРС ЯВЛЯЕТСЯ АГРЕГАТОРОМ ОТКРЫТЫХ ДАННЫХ (OSINT). 
-          ВСЕ РАСЧЕТЫ ЯВЛЯЮТСЯ ВЕРОЯТНОСТНЫМИ МОДЕЛЯМИ. ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ ДИРЕКТИВОЙ СЛУЖБ БЕЗОПАСНОСТИ.
+          ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ ДИРЕКТИВОЙ СЛУЖБ БЕЗОПАСНОСТИ.
         </p>
         <div style={s.footerMeta}>MADAD HAOREF © 2026 // ADAPTIVE_MONITORING_ACTIVE</div>
       </footer>
+
+      <style jsx global>{`
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+      `}</style>
     </div>
   );
 }
@@ -145,11 +141,12 @@ const s = {
   newsSrc: { color: '#0f4', fontWeight: 'bold' },
   infoBox: { borderTop: '1px solid #1a1a1a', paddingTop: '15px', marginTop: '15px' },
   infoRow: { display: 'flex', alignItems: 'center' },
+  methodRow: { fontSize: '8px', color: '#333', marginTop: '10px', textTransform: 'none' },
   infoLabel: { color: '#0f4', fontSize: '10px', marginRight: '15px' },
   metricsList: { display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' },
   metricItem: { fontSize: '10px', display: 'flex', alignItems: 'center', gap: '5px', color: '#444' },
   dot: { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' },
-  forecastBox: { border: '1px solid #600', padding: '20px', background: '#0d0000', textAlign: 'center', marginTop: '10px' },
+  forecastBox: { border: '1px solid #600', padding: '20px', background: '#0d0000', textAlign: 'center' },
   forecastTitle: { fontSize: '14px', color: '#ff3e3e', margin: '0 0 10px 0' },
   forecastText: { fontSize: '12px', textTransform: 'none', color: '#fff', lineHeight: '1.5' },
   footer: { marginTop: '40px', borderTop: '1px solid #1a1a1a', paddingTop: '20px', textAlign: 'center', width: '100%', maxWidth: '650px' },
