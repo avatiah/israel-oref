@@ -8,9 +8,9 @@ export default function MadadHaOref() {
   const fetchIntel = async () => {
     try {
       const res = await fetch('/api/data');
-      if (!res.ok) throw new Error("API_UNAVAILABLE");
+      if (!res.ok) throw new Error("SYNC_LOST");
       const json = await res.json();
-      if (json && json.nodes && json.nodes.length > 0) {
+      if (json && json.nodes) {
         lastValidData.current = json;
         setData(json);
         setErrorCount(0);
@@ -23,31 +23,32 @@ export default function MadadHaOref() {
 
   useEffect(() => {
     fetchIntel();
-    const timer = setInterval(fetchIntel, 12000);
+    const timer = setInterval(fetchIntel, 10000);
     return () => clearInterval(timer);
   }, []);
 
-  if (!data) return <div style={s.loader}>{">"} ACCESSING_INTEL_STREAM...</div>;
+  // Если данных нет совсем, показываем загрузку, но не блокируем экран при обновлениях
+  if (!data && errorCount === 0) return <div style={s.loader}>{">"} ACCESSING_INTEL_STREAM...</div>;
 
   return (
     <div style={s.container}>
-      {/* HEADER - СТРОГО ЦЕНТР И АДАПТИВНОСТЬ */}
+      {/* HEADER - СТРОГО ЦЕНТР */}
       <header style={s.header}>
         <h1 style={s.logo}>MADAD HAOREF</h1>
         <div style={s.statusBlock}>
-          <div style={s.meta}>SECURITY_ANALYSIS_TERMINAL // V10.6</div>
+          <div style={s.meta}>SECURITY_ANALYSIS_TERMINAL // V11.0</div>
           <div style={s.statusText}>
             STATUS: <span style={{color: errorCount > 0 ? '#ff3e3e' : '#0f4'}}>
-              {errorCount > 0 ? 'RECONNECTING...' : 'LIVE_ENCRYPTED'}
+              {errorCount > 0 ? 'RECONNECTING_TO_NODES...' : 'LIVE_ENCRYPTED'}
             </span>
           </div>
-          <div style={s.time}>{new Date(data.timestamp).toLocaleTimeString()} UTC</div>
+          <div style={s.time}>{data ? new Date(data.timestamp).toLocaleTimeString() : '--:--:--'} UTC</div>
         </div>
       </header>
 
-      {/* MAIN CONTENT - ОГРАНИЧЕНИЕ ПО ШИРИНЕ ДЛЯ МОБИЛОК */}
+      {/* MAIN CONTENT - АДАПТИВНАЯ СЕТКА */}
       <main style={s.grid}>
-        {data.nodes.map(node => (
+        {data?.nodes?.map(node => (
           <div key={node.id} style={s.card}>
             <div style={s.cardTop}>
               <div style={s.nodeTitle}>{node.title}</div>
@@ -69,30 +70,31 @@ export default function MadadHaOref() {
 
             <div style={s.infoBox}>
               <div style={s.infoRow}>
-                <span style={s.infoLabel}>SOURCE:</span> 
-                <span style={s.infoVal}>{node.source || 'OSINT_FEED'}</span>
+                <span style={s.infoLabel}>ИСТОЧНИКИ:</span> 
+                <span style={s.infoVal}>{node.source || 'GDELT, ISW, CENTCOM'}</span>
               </div>
               <div style={s.infoRow}>
-                <span style={s.infoLabel}>METHOD:</span> 
+                <span style={s.infoLabel}>МЕТОДОЛОГИЯ:</span> 
                 <span style={s.infoVal}>{node.method}</span>
               </div>
             </div>
           </div>
         ))}
+
+        {/* STRATEGIC FORECAST */}
+        <div style={s.forecastBox}>
+          <h3 style={s.forecastTitle}>⚠️ ПРОГНОЗ: {data?.prediction?.date || '06.02'}</h3>
+          <p style={s.forecastText}>
+            ВЕКТОР: <strong style={{color:'#ff3e3e'}}>{data?.prediction?.status || 'ANALYZING'}</strong>. <br/>
+            При срыве протокола в Омане риск удара вырастет до <strong>{data?.prediction?.impact || '--'}%</strong>.
+          </p>
+        </div>
       </main>
 
-      <div style={s.forecastBox}>
-        <h3 style={s.forecastTitle}>⚠️ ПРОГНОЗ: {data.prediction?.date}</h3>
-        <p style={s.forecastText}>
-          ВЕКТОР: <strong style={{color:'#ff3e3e'}}>{data.prediction?.status}</strong>. <br/>
-          РИСК УДАРА США: <strong>{data.prediction?.impact}%</strong>.
-        </p>
-      </div>
-
+      {/* FOOTER */}
       <footer style={s.footer}>
         <p style={s.disclaimerText}>
-          <strong>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:</strong> АГРЕГАТОР ОТКРЫТЫХ ДАННЫХ. 
-          ИНФОРМАЦИЯ НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ ДИРЕКТИВОЙ.
+          <strong>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:</strong> OSINT-АГРЕГАТОР. НЕ ЯВЛЯЕТСЯ ОФИЦИАЛЬНОЙ ДИРЕКТИВОЙ.
         </p>
         <div style={s.footerMeta}>MADAD HAOREF © 2026</div>
       </footer>
@@ -106,119 +108,108 @@ const s = {
     color: '#0f4', 
     fontFamily: 'monospace', 
     minHeight: '100vh', 
-    padding: '20px 10px', 
-    textTransform: 'uppercase',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center'
+    padding: '40px 15px', 
+    display: 'flex', 
+    flexDirection: 'column', 
+    alignItems: 'center',
+    boxSizing: 'border-box'
   },
   header: { 
     textAlign: 'center', 
+    marginBottom: '40px',
     width: '100%',
-    maxWidth: '600px',
-    borderBottom: '1px solid #333', 
-    paddingBottom: '20px', 
-    marginBottom: '30px' 
+    maxWidth: '650px'
   },
   logo: { 
-    fontSize: 'clamp(20px, 8vw, 32px)', 
-    letterSpacing: '4px', 
-    margin: '0 0 10px 0', 
-    fontWeight: 'bold',
-    width: '100%'
+    fontSize: 'clamp(22px, 7vw, 36px)', 
+    letterSpacing: '5px', 
+    fontWeight: 'bold', 
+    margin: '0 0 10px 0' 
   },
   statusBlock: { 
     display: 'flex', 
     flexDirection: 'column', 
     alignItems: 'center', 
-    gap: '5px' 
+    gap: '4px' 
   },
-  meta: { fontSize: '10px', color: '#bbb' },
+  meta: { fontSize: '11px', color: '#00cc00' }, // Зеленый вместо серого
   statusText: { fontSize: '11px', fontWeight: 'bold' },
-  time: { fontSize: '10px', color: '#888' },
-  
+  time: { fontSize: '10px', color: '#008800' },
+
   grid: { 
-    width: '100%',
-    maxWidth: '600px', 
+    width: '100%', 
+    maxWidth: '650px', 
     display: 'flex', 
     flexDirection: 'column', 
-    gap: '15px' 
+    gap: '20px' 
   },
   card: { 
-    border: '1px solid #333', 
-    padding: '15px', 
-    background: '#050505',
-    boxSizing: 'border-box'
+    border: '1px solid #004400', 
+    padding: '20px', 
+    background: '#050505' 
   },
   cardTop: { 
     display: 'flex', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
-    marginBottom: '15px' 
+    marginBottom: '20px' 
   },
   nodeTitle: { 
-    fontSize: 'clamp(10px, 3vw, 13px)', 
-    color: '#bbb', 
-    fontWeight: 'bold',
-    maxWidth: '60%'
-  },
-  value: { 
-    fontSize: 'clamp(30px, 10vw, 48px)', 
+    fontSize: 'clamp(11px, 3vw, 14px)', 
+    color: '#fff', // Белый для контраста
     fontWeight: 'bold' 
   },
-  
-  newsSection: { 
-    borderLeft: '2px solid #222', 
-    paddingLeft: '15px', 
-    marginBottom: '15px' 
+  value: { 
+    fontSize: 'clamp(36px, 10vw, 56px)', 
+    fontWeight: 'bold' 
   },
-  sectionLabel: { fontSize: '10px', color: '#0f4', marginBottom: '8px' },
+
+  newsSection: { 
+    borderLeft: '2px solid #004400', 
+    paddingLeft: '15px', 
+    marginBottom: '20px' 
+  },
+  sectionLabel: { fontSize: '10px', color: '#0f4', marginBottom: '10px' },
   newsList: { display: 'flex', flexDirection: 'column', gap: '8px' },
   newsItem: { 
-    fontSize: 'clamp(11px, 3.5vw, 12px)', 
-    color: '#eee', 
+    fontSize: '13px', 
+    color: '#ffffff', // Чистый белый для мобилок
     textTransform: 'none', 
     lineHeight: '1.4' 
   },
   newsSrc: { color: '#0f4', fontWeight: 'bold' },
-  
-  infoBox: { 
-    borderTop: '1px solid #222', 
-    paddingTop: '12px' 
-  },
-  infoRow: { display: 'flex', marginBottom: '4px', fontSize: '9px' },
-  infoLabel: { color: '#888', width: '80px', flexShrink: 0 },
-  infoVal: { color: '#aaa', textTransform: 'none' },
-  
+
+  infoBox: { borderTop: '1px solid #1a1a1a', paddingTop: '15px' },
+  infoRow: { display: 'flex', marginBottom: '5px', fontSize: '10px' },
+  infoLabel: { color: '#0f4', width: '100px', flexShrink: 0 },
+  infoVal: { color: '#ffffff', textTransform: 'none' },
+
   forecastBox: { 
-    width: '100%',
-    maxWidth: '600px', 
     border: '1px solid #600', 
-    padding: '15px', 
-    background: '#0d0000',
-    marginTop: '20px',
-    boxSizing: 'border-box'
+    padding: '20px', 
+    background: '#100000', 
+    marginTop: '10px' 
   },
-  forecastTitle: { fontSize: '14px', color: '#ff3e3e', margin: '0 0 8px 0' },
-  forecastText: { fontSize: '12px', textTransform: 'none', color: '#fff' },
-  
+  forecastTitle: { fontSize: '15px', color: '#ff3e3e', margin: '0 0 10px 0' },
+  forecastText: { fontSize: '13px', textTransform: 'none', color: '#fff', lineHeight: '1.5' },
+
   footer: { 
-    width: '100%',
-    maxWidth: '600px', 
-    textAlign: 'center',
-    marginTop: '40px', 
-    borderTop: '1px solid #222', 
+    width: '100%', 
+    maxWidth: '650px', 
+    marginTop: '50px', 
+    textAlign: 'center', 
+    borderTop: '1px solid #1a1a1a', 
     paddingTop: '20px' 
   },
-  disclaimerText: { fontSize: '9px', color: '#666', textTransform: 'none' },
-  footerMeta: { fontSize: '9px', color: '#333', marginTop: '10px' },
-  
+  disclaimerText: { fontSize: '10px', color: '#008800', textTransform: 'none' },
+  footerMeta: { fontSize: '9px', color: '#004400', marginTop: '10px' },
+
   loader: { 
     height: '100vh', 
     display: 'flex', 
     alignItems: 'center', 
     justifyContent: 'center', 
-    color: '#0f4', 
-    background: '#000' 
+    background: '#000', 
+    color: '#0f4' 
   }
 };
